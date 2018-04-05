@@ -81,6 +81,17 @@ namespace projEuler {
                 ,digits.rend());
     }
 
+    template <typename T1, typename T2>
+    std::vector<T2> getDigits(T1 num) {
+        std::vector<T2> digits;
+        while( num>0 ) {
+            digits.push_back(static_cast<T2>( num%10 ));
+            num /= 10;
+        }
+        return std::vector<T2>(digits.rbegin()
+                ,digits.rend());
+    }
+
     template <typename T>
     T combineDigits(const std::vector<T> &digits) {
         T num=0;
