@@ -1,1 +1,2 @@
 add_executable(Problem052 Problem052.cpp)
+add_executable(Problem054 Problem054.cpp)
