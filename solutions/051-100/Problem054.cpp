@@ -23,21 +23,21 @@
  * and so on.
  *
  * Consider the following five hands dealt to two players:
- * Hand	 	  Player 1	 	    Player 2	 	  Winner
- *  1	 	5H 5C 6S 7S KD   2C 3S 8S 8D TD  Player 2
+ * Hand     Player 1        Player 2      Winner
+ *  1   5H 5C 6S 7S KD   2C 3S 8S 8D TD  Player 2
  *      Pair of Fives    Pair of Eights
  *
- *  2	 	5D 8C 9S JS AC   2C 5C 7D 8S QH  Player 1
+ *  2   5D 8C 9S JS AC   2C 5C 7D 8S QH  Player 1
  *    Highest card Ace  Highest card Queen
  *
- *  3	 	2D 9C AS AH AC   3D 6D 7D TD QD  Player 2
+ *  3   2D 9C AS AH AC   3D 6D 7D TD QD  Player 2
  *        Three Aces  Flush with Diamonds
  *
- *  4	 	4D 6S 9H QH QC   3D 6D 7H QD QS  Player 1
+ *  4   4D 6S 9H QH QC   3D 6D 7H QD QS  Player 1
  *      Pair of Queens   Pair of Queens
  *    Highest card Nine Highest card Seven
  *
- *  5	 	2H 2D 4C 4D 4S   3C 3D 3S 9S 9D  Player 1
+ *  5   2H 2D 4C 4D 4S   3C 3D 3S 9S 9D  Player 1
  *        Full House       Full House
  *    With Three Fours  with Three Threes
  *
@@ -51,7 +51,11 @@
  * How many hands does Player 1 win? */
 
 #include <algorithm>
+#include <fstream>
 #include <iostream>
+#include <iterator>
+#include <string>
+#include <utility>
 #include <vector>
 
 class Card {
@@ -76,25 +80,16 @@ public:
 
   Card(Rank rank, Suit suit) : _rank(rank), _suit(suit) {}
 
-  bool operator<(const Card &rhs) const {
-    return static_cast<unsigned short>(this->_rank) <
-           static_cast<unsigned short>(rhs._rank);
-  }
+  bool operator<(const Card &rhs) { return this->_rank < rhs._rank; }
 
-  bool hasRank(const Card::Rank &rank) const { return this->_rank == rank; }
+  bool operator>(const Card &rhs) { return this->_rank > rhs._rank; }
 
-  bool hasSuit(const Card::Suit &suit) const { return this->_suit == suit; }
+  explicit operator Card::Rank() const { return _rank; }
 
-  bool compareRank(const Card &other) const {
-    return this->_rank == other._rank;
-  }
+  explicit operator Card::Suit() const { return _suit; }
 
-  bool compareSuit(const Card &other) const {
-    return this->_suit == other._suit;
-  }
-
-  unsigned short getRankValue() const {
-    return static_cast<unsigned short>(this->_rank);
+  explicit operator unsigned short() const {
+    return static_cast<unsigned short>(_rank);
   }
 
   friend std::ostream &operator<<(std::ostream &os, const Card &card) {
@@ -180,19 +175,33 @@ public:
   };
 
   Hand(Card card1, Card card2, Card card3, Card card4, Card card5)
-      : _cards(
-            _sortedCards(std::vector<Card>{card1, card2, card3, card4, card5})),
-        _rank(_getRank()) {}
+      : _ranks(
+            _readCards(std::vector<Card>{card1, card2, card3, card4, card5})) {}
+
+  bool operator>(const Hand &rhs) const {
+    bool greater = false;
+
+    unsigned short i = 0;
+    bool found_winner = false;
+    while (not found_winner) {
+      if (this->_ranks[i].first == rhs._ranks[i].first) {
+        if (this->_ranks[i].second != rhs._ranks[i].second) {
+          found_winner = true;
+          greater = this->_ranks[i].second > rhs._ranks[i].second;
+        } else
+          ++i;
+      } else {
+        found_winner = true;
+        greater = this->_ranks[i].first > rhs._ranks[i].first;
+      }
+    }
+
+    return greater;
+  }
 
   friend std::ostream &operator<<(std::ostream &os, const Hand &hand) {
-    os << "{{\n"
-       << hand._cards[0] << ", \n"
-       << hand._cards[1] << ", \n"
-       << hand._cards[2] << ", \n"
-       << hand._cards[3] << ", \n"
-       << hand._cards[4] << ", \n"
-       << "rank: ";
-    switch (hand._rank) {
+    os << "{{";
+    switch (hand._ranks.front().first) {
     case Hand::Rank::RoyalFlush:
       os << "Royal flush";
       break;
@@ -224,93 +233,341 @@ public:
       os << "High card";
       break;
     }
-    os << "\n}}";
+    os << "}}";
 
     return os;
   }
 
 private:
-  std::vector<Card> _sortedCards(std::vector<Card> cards) {
-    std::sort(cards.begin(), cards.end());
-    return cards;
+  typedef std::pair<Hand::Rank, Card::Rank> rank_pair_t;
+
+  bool _checkAllCardsSameSuit(const std::vector<Card> &cards) const {
+    return (static_cast<Card::Suit>(cards[0]) ==
+            static_cast<Card::Suit>(cards[1])) and
+           (static_cast<Card::Suit>(cards[1]) ==
+            static_cast<Card::Suit>(cards[2])) and
+           (static_cast<Card::Suit>(cards[2]) ==
+            static_cast<Card::Suit>(cards[3])) and
+           (static_cast<Card::Suit>(cards[3]) ==
+            static_cast<Card::Suit>(cards[4]));
   }
 
-  bool _checkAllCardsSameSuit() const {
-    return _cards[0].compareSuit(_cards[1]) and
-           _cards[1].compareSuit(_cards[2]) and
-           _cards[2].compareSuit(_cards[3]) and
-           _cards[3].compareSuit(_cards[4]);
+  bool _checkConsecutiveValues(const std::vector<Card> &cards) const {
+    return (static_cast<unsigned short>(cards[1]) ==
+            static_cast<unsigned short>(cards[0]) + 1) and
+           (static_cast<unsigned short>(cards[2]) ==
+            static_cast<unsigned short>(cards[1]) + 1) and
+           (static_cast<unsigned short>(cards[3]) ==
+            static_cast<unsigned short>(cards[2]) + 1) and
+           (static_cast<unsigned short>(cards[4]) ==
+            static_cast<unsigned short>(cards[3]) + 1);
   }
 
-  bool _checkConsecutiveValues() const {
-    return _cards[1].getRankValue() == _cards[0].getRankValue() + 1 and
-           _cards[2].getRankValue() == _cards[1].getRankValue() + 1 and
-           _cards[3].getRankValue() == _cards[2].getRankValue() + 1 and
-           _cards[4].getRankValue() == _cards[3].getRankValue() + 1;
-  }
-
-  std::vector<unsigned short> _countRepeatedCards() const {
+  std::vector<unsigned short>
+  _countCards(const std::vector<Card> &cards) const {
     std::vector<unsigned short> result(13, 0);
 
-    for (auto c : _cards)
-      result[c.getRankValue()]++;
+    for (auto c : cards)
+      result[static_cast<unsigned short>(c)]++;
 
     return result;
   }
 
-  Hand::Rank _getRank() {
-    const bool all_same_suit = _checkAllCardsSameSuit();
-    const bool consecutive_values = _checkConsecutiveValues();
-    std::vector<unsigned short> card_repetitions = _countRepeatedCards();
-    const bool three_of_a_kind =
-        std::find(card_repetitions.begin(), card_repetitions.end(), 3) !=
-        card_repetitions.end();
-    const bool one_pair =
-        std::find(card_repetitions.begin(), card_repetitions.end(), 2) !=
-        card_repetitions.end();
-
-    if (_cards[0].hasRank(Card::Rank::Ten) and consecutive_values and
-        all_same_suit)
-      return Hand::Rank::RoyalFlush;
-    else if (consecutive_values and all_same_suit)
-      return Hand::Rank::StraightFlush;
-    else if (std::find(card_repetitions.begin(), card_repetitions.end(), 4) !=
-             card_repetitions.end())
-      return Hand::Rank::FourOfAKind;
-    else if (three_of_a_kind and one_pair)
-      return Hand::Rank::FullHouse;
-    else if (all_same_suit)
-      return Hand::Rank::Flush;
-    else if (consecutive_values)
-      return Hand::Rank::Straight;
-    else if (three_of_a_kind)
-      return Hand::Rank::ThreeOfAKind;
-    else if (std::find(
-                 std::find(card_repetitions.begin(), card_repetitions.end(), 2),
-                 card_repetitions.end(), 2) != card_repetitions.end())
-      return Hand::Rank::TwoPairs;
-    else if (one_pair)
-      return Hand::Rank::OnePair;
-    else
-      return Hand::Rank::HighCard;
+  Card::Rank _rankOfRepeated(const std::vector<unsigned short> &rank_count,
+                             const unsigned short &repetitions) {
+    const auto repeated_it =
+        std::find(rank_count.begin(), rank_count.end(), repetitions);
+    const auto rank_val = static_cast<unsigned short>(
+        std::distance(rank_count.begin(), repeated_it));
+    return static_cast<Card::Rank>(rank_val);
   }
 
-  const std::vector<Card> _cards;
-  const Hand::Rank _rank;
+  void _appendRemainingHighCards(std::vector<rank_pair_t> &ranks,
+                                 const std::vector<Card> &cards,
+                                 const Card::Rank &repeated) {
+    for (auto card_it = cards.rbegin(); card_it != cards.rend(); card_it++)
+      if (static_cast<Card::Rank>(*card_it) != repeated)
+        ranks.emplace_back(rank_pair_t{Hand::Rank::HighCard,
+                                       static_cast<Card::Rank>(*card_it)});
+  }
+
+  std::vector<rank_pair_t> _singleRankHand(const std::vector<Card> &cards,
+                                           const Hand::Rank &rank) {
+    return std::vector<rank_pair_t>{
+        rank_pair_t{rank, static_cast<Card::Rank>(cards[4])},
+        rank_pair_t{rank, static_cast<Card::Rank>(cards[3])},
+        rank_pair_t{rank, static_cast<Card::Rank>(cards[2])},
+        rank_pair_t{rank, static_cast<Card::Rank>(cards[1])},
+        rank_pair_t{rank, static_cast<Card::Rank>(cards[0])}};
+  }
+
+  std::vector<rank_pair_t> _readCards(std::vector<Card> cards) {
+    std::vector<rank_pair_t> ranks;
+    std::sort(cards.begin(), cards.end());
+
+    const bool all_same_suit = _checkAllCardsSameSuit(cards);
+    const bool consecutive_values = _checkConsecutiveValues(cards);
+
+    std::vector<unsigned short> ranked_card_count = _countCards(cards);
+
+    const bool has_four_of_a_kind =
+        std::find(ranked_card_count.begin(), ranked_card_count.end(), 4) !=
+        ranked_card_count.end();
+    const bool has_three_of_a_kind =
+        std::find(ranked_card_count.begin(), ranked_card_count.end(), 3) !=
+        ranked_card_count.end();
+    const bool has_a_pair =
+        std::find(ranked_card_count.begin(), ranked_card_count.end(), 2) !=
+        ranked_card_count.end();
+    const bool has_two_pairs =
+        has_a_pair and
+        std::find(
+            std::find(ranked_card_count.begin(), ranked_card_count.end(), 2) +
+                1,
+            ranked_card_count.end(), 2) != ranked_card_count.end();
+
+    if (static_cast<Card::Rank>(cards[0]) == Card::Rank::Ten and
+        consecutive_values and all_same_suit)
+      ranks.emplace_back(rank_pair_t{
+          Hand::Rank::RoyalFlush,
+          Card::Rank::Ace}); // for guaranteed winner, sub-ranks not needed
+    else if (consecutive_values and all_same_suit)
+      ranks = _singleRankHand(cards, Hand::Rank::StraightFlush);
+    else if (has_four_of_a_kind) {
+      const auto four_of_a_kind_rank = _rankOfRepeated(ranked_card_count, 4);
+      ranks.emplace_back(
+          rank_pair_t{Hand::Rank::FourOfAKind, four_of_a_kind_rank});
+
+      _appendRemainingHighCards(ranks, cards, four_of_a_kind_rank);
+    } else if (has_three_of_a_kind and has_a_pair)
+      ranks = std::vector<rank_pair_t>{
+          rank_pair_t{Hand::Rank::FullHouse,
+                      _rankOfRepeated(ranked_card_count, 3)},
+          rank_pair_t{Hand::Rank::FullHouse,
+                      _rankOfRepeated(ranked_card_count, 2)}};
+    else if (all_same_suit)
+      ranks = _singleRankHand(cards, Hand::Rank::Flush);
+    else if (consecutive_values)
+      ranks = _singleRankHand(cards, Hand::Rank::Straight);
+    else if (has_three_of_a_kind) {
+      const auto three_of_a_kind_rank = _rankOfRepeated(ranked_card_count, 3);
+      ranks.emplace_back(
+          rank_pair_t{Hand::Rank::ThreeOfAKind, three_of_a_kind_rank});
+
+      _appendRemainingHighCards(ranks, cards, three_of_a_kind_rank);
+    } else if (has_two_pairs) {
+      auto higher_pair_rank_val_it =
+          std::find(ranked_card_count.rbegin(), ranked_card_count.rend(), 2);
+      auto lower_pair_rank_val_it =
+          std::find(higher_pair_rank_val_it, ranked_card_count.rend(), 2);
+      auto unpaired_rank_val_it =
+          std::find(ranked_card_count.begin(), ranked_card_count.end(), 1);
+      ranks = std::vector<rank_pair_t>{
+          rank_pair_t{Hand::Rank::TwoPairs,
+                      static_cast<Card::Rank>(*higher_pair_rank_val_it)},
+          rank_pair_t{Hand::Rank::TwoPairs,
+                      static_cast<Card::Rank>(*lower_pair_rank_val_it)},
+          rank_pair_t{Hand::Rank::HighCard,
+                      static_cast<Card::Rank>(*unpaired_rank_val_it)}};
+    } else if (has_a_pair) {
+      const auto pair_rank = _rankOfRepeated(ranked_card_count, 2);
+      ranks.emplace_back(rank_pair_t{Hand::Rank::OnePair, pair_rank});
+
+      _appendRemainingHighCards(ranks, cards, pair_rank);
+    } else
+      ranks = _singleRankHand(cards, Hand::Rank::HighCard);
+
+    return ranks;
+  }
+
+  const std::vector<rank_pair_t> _ranks;
 };
 
+// function prototypes
+std::ifstream openTextFile(const std::string &filepath);
+std::string readLine(std::ifstream &file);
+std::pair<const Hand, const Hand> createHandsFromLine(const std::string &line);
+Card convertCharPairToCard(const char &first, const char &second);
+
 int main() {
-  Card card1{Card::Rank::Ace, Card::Suit::Hearts},
-      card2{Card::Rank::King, Card::Suit::Diamonds},
-      card3{Card::Rank::Ace, Card::Suit::Diamonds},
-      card4{Card::Rank::King, Card::Suit::Spades},
-      card5{Card::Rank::Ten, Card::Suit::Diamonds};
-
-  // quick test the classes, verify correct output
+  // quick test using example set of 5 hands from problem statement
+  std::cout << "Player 1 wins the following: \n";
   std::cout << std::boolalpha;
-  std::cout << card1 << " < " << card2 << " = " << (card1 < card2) << std::endl;
-  std::cout << card3 << " < " << card4 << " = " << (card3 < card4) << std::endl
-            << std::endl;
+  std::cout << "   hand 1: "
+            << (Hand{Card{Card::Rank::Five, Card::Suit::Hearts},
+                     Card{Card::Rank::Five, Card::Suit::Clubs},
+                     Card{Card::Rank::Six, Card::Suit::Spades},
+                     Card{Card::Rank::Seven, Card::Suit::Spades},
+                     Card{Card::Rank::King, Card::Suit::Diamonds}} >
+                Hand{Card{Card::Rank::Two, Card::Suit::Clubs},
+                     Card{Card::Rank::Three, Card::Suit::Spades},
+                     Card{Card::Rank::Eight, Card::Suit::Spades},
+                     Card{Card::Rank::Eight, Card::Suit::Diamonds},
+                     Card{Card::Rank::Ten, Card::Suit::Diamonds}})
+            << '\n';
+  std::cout << "   hand 2: "
+            << (Hand{Card{Card::Rank::Five, Card::Suit::Diamonds},
+                     Card{Card::Rank::Eight, Card::Suit::Clubs},
+                     Card{Card::Rank::Nine, Card::Suit::Spades},
+                     Card{Card::Rank::Jack, Card::Suit::Spades},
+                     Card{Card::Rank::Ace, Card::Suit::Clubs}} >
+                Hand{Card{Card::Rank::Two, Card::Suit::Clubs},
+                     Card{Card::Rank::Five, Card::Suit::Clubs},
+                     Card{Card::Rank::Seven, Card::Suit::Diamonds},
+                     Card{Card::Rank::Eight, Card::Suit::Spades},
+                     Card{Card::Rank::Queen, Card::Suit::Hearts}})
+            << '\n';
+  std::cout << "   hand 3: "
+            << (Hand{Card{Card::Rank::Two, Card::Suit::Diamonds},
+                     Card{Card::Rank::Nine, Card::Suit::Clubs},
+                     Card{Card::Rank::Ace, Card::Suit::Spades},
+                     Card{Card::Rank::Ace, Card::Suit::Hearts},
+                     Card{Card::Rank::Ace, Card::Suit::Clubs}} >
+                Hand{Card{Card::Rank::Three, Card::Suit::Diamonds},
+                     Card{Card::Rank::Six, Card::Suit::Diamonds},
+                     Card{Card::Rank::Seven, Card::Suit::Diamonds},
+                     Card{Card::Rank::Ten, Card::Suit::Diamonds},
+                     Card{Card::Rank::Queen, Card::Suit::Diamonds}})
+            << '\n';
+  std::cout << "   hand 4: "
+            << (Hand{Card{Card::Rank::Four, Card::Suit::Diamonds},
+                     Card{Card::Rank::Six, Card::Suit::Spades},
+                     Card{Card::Rank::Nine, Card::Suit::Hearts},
+                     Card{Card::Rank::Queen, Card::Suit::Hearts},
+                     Card{Card::Rank::Queen, Card::Suit::Clubs}} >
+                Hand{Card{Card::Rank::Three, Card::Suit::Diamonds},
+                     Card{Card::Rank::Six, Card::Suit::Diamonds},
+                     Card{Card::Rank::Seven, Card::Suit::Hearts},
+                     Card{Card::Rank::Queen, Card::Suit::Diamonds},
+                     Card{Card::Rank::Queen, Card::Suit::Spades}})
+            << '\n';
+  std::cout << "   hand 5: "
+            << (Hand{Card{Card::Rank::Two, Card::Suit::Hearts},
+                     Card{Card::Rank::Two, Card::Suit::Diamonds},
+                     Card{Card::Rank::Four, Card::Suit::Clubs},
+                     Card{Card::Rank::Four, Card::Suit::Diamonds},
+                     Card{Card::Rank::Four, Card::Suit::Spades}} >
+                Hand{Card{Card::Rank::Three, Card::Suit::Clubs},
+                     Card{Card::Rank::Three, Card::Suit::Diamonds},
+                     Card{Card::Rank::Three, Card::Suit::Spades},
+                     Card{Card::Rank::Nine, Card::Suit::Spades},
+                     Card{Card::Rank::Nine, Card::Suit::Diamonds}})
+            << "\n\n";
 
-  std::cout << Hand{card1, card2, card3, card4, card5} << std::endl;
+  const std::string FILEPATH{
+      "../../../solutions/051-100/Problem054/p054_poker.txt"};
+  std::ifstream file = openTextFile(FILEPATH);
+
+  unsigned short player1_score = 0;
+  for (unsigned i = 0; i < 1000; i++) {
+    const std::string line = readLine(file);
+    const std::pair<const Hand, const Hand> both_player_hands =
+        createHandsFromLine(line);
+
+    if (both_player_hands.first > both_player_hands.second)
+      player1_score++;
+  }
+
+  std::cout << "Player 1 won " << player1_score << " times.";
+
+  file.close();
+}
+
+std::ifstream openTextFile(const std::string &filepath) {
+  std::ifstream file(filepath);
+  if (file.fail()) {
+    std::cerr << "error opening the file. exiting" << std::endl;
+    exit(1);
+  }
+  return file;
+}
+
+std::string readLine(std::ifstream &file) {
+  std::string line;
+  std::getline(file, line, '\n');
+  return line;
+}
+
+Card convertCharPairToCard(const char &first, const char &second) {
+  Card::Rank rank;
+  Card::Suit suit;
+
+  switch (first) {
+  case '2':
+    rank = Card::Rank::Two;
+    break;
+  case '3':
+    rank = Card::Rank::Three;
+    break;
+  case '4':
+    rank = Card::Rank::Four;
+    break;
+  case '5':
+    rank = Card::Rank::Five;
+    break;
+  case '6':
+    rank = Card::Rank::Six;
+    break;
+  case '7':
+    rank = Card::Rank::Seven;
+    break;
+  case '8':
+    rank = Card::Rank::Eight;
+    break;
+  case '9':
+    rank = Card::Rank::Nine;
+    break;
+  case 'T':
+    rank = Card::Rank::Ten;
+    break;
+  case 'J':
+    rank = Card::Rank::Jack;
+    break;
+  case 'Q':
+    rank = Card::Rank::Queen;
+    break;
+  case 'K':
+    rank = Card::Rank::King;
+    break;
+  case 'A':
+    rank = Card::Rank::Ace;
+    break;
+  default:
+    rank = Card::Rank::Ace;
+  }
+
+  switch (second) {
+  case 'C':
+    suit = Card::Suit::Clubs;
+    break;
+  case 'S':
+    suit = Card::Suit::Spades;
+    break;
+  case 'H':
+    suit = Card::Suit::Hearts;
+    break;
+  case 'D':
+    suit = Card::Suit::Diamonds;
+    break;
+  default:
+    suit = Card::Suit::Diamonds;
+  }
+
+  return Card{rank, suit};
+}
+
+std::pair<const Hand, const Hand> createHandsFromLine(const std::string &line) {
+  const Card card1{convertCharPairToCard(line[0], line[1])},
+      card2{convertCharPairToCard(line[3], line[4])},
+      card3{convertCharPairToCard(line[6], line[7])},
+      card4{convertCharPairToCard(line[9], line[10])},
+      card5{convertCharPairToCard(line[12], line[13])},
+      card6{convertCharPairToCard(line[15], line[16])},
+      card7{convertCharPairToCard(line[18], line[19])},
+      card8{convertCharPairToCard(line[21], line[22])},
+      card9{convertCharPairToCard(line[24], line[25])},
+      card10{convertCharPairToCard(line[27], line[28])};
+  const Hand hand1{card1, card2, card3, card4, card5},
+      hand2{card6, card7, card8, card9, card10};
+  return std::pair<const Hand, const Hand>{hand1, hand2};
 }
