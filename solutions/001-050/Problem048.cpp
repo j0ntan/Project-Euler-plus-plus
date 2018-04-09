@@ -31,8 +31,8 @@ std::string calcSelfPwr(unsigned limit) {
             // we only care about last 10 digits
             // **greatly reduces computation time**
             if( term.size() > 10 )
-                term = std::string(term.end()-10
-                        ,term.end());
+                term = StrNum(std::string(term.end()-10
+                        ,term.end()));
         }
         result = result + term;
     } while( ++exponent <= limit );
