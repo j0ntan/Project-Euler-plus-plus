@@ -4,20 +4,14 @@
 #include <vector>
 
 namespace projEuler {
-bool isPalindrome(std::string str) {
-  std::string firstHalf, secondHalf;
-  std::string rev; // second half, will be reversed
-  bool evenDigits = str.size() % 2 == 0;
+bool isPalindrome(const std::string &str) {
+  bool palindrome = true;
 
-  auto midIdx = str.size() / 2;
-  firstHalf = str.substr(0, midIdx);
-  if (evenDigits)
-    rev = str.substr(midIdx, std::string::npos);
-  else
-    rev = str.substr(midIdx + 1, std::string::npos);
+  for (unsigned i = 0; i < str.size() / 2 and palindrome; ++i)
+    if (str[i] != str[str.size() - i - 1])
+      palindrome = false;
 
-  secondHalf = std::string(rev.rbegin(), rev.rend());
-  return firstHalf == secondHalf;
+  return palindrome;
 }
 
 bool isPrime(unsigned num) {
