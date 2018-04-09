@@ -25,7 +25,32 @@
  *
  * How many Lychrel numbers are there below ten-thousand? */
 
-int main() {}
+#include <iostream>
+
+int main() {
+  const unsigned NUMBERS_LIMIT = 10'000;
+  const unsigned ITERATION_LIMIT = 50;
+
+  unsigned lychrel_number_count = 0;
+  for (unsigned number = 0; number < NUMBERS_LIMIT; number++) {
+    bool is_palindrome = false;
+    for (unsigned iter_count = 1;
+         iter_count < ITERATION_LIMIT and not is_palindrome; iter_count++) {
+      // convert num to str
+
+      // create the reverse of original
+
+      // add original with reverse
+
+      // check if palindrome
+    }
+    if (not is_palindrome)
+      lychrel_number_count++;
+  }
+
+  std::cout << "There are " << lychrel_number_count
+            << " Lychrel numbers below ten-thousand.";
+}
 
 /* Thought process:
  * 1. According to the problem statement, we have an upper-bound of 50
