@@ -1,18 +1,20 @@
 #ifndef STRNUM_H
 #define STRNUM_H
 
+#include <string>
 
 class StrNum : public std::string {
 public:
-    StrNum(unsigned init=0);
-    StrNum(std::string str) : std::string(str){}
+  explicit StrNum(const unsigned &numerical = 0);
+  explicit StrNum(const std::string &str);
 
-    const unsigned operator [](unsigned idx) const;
-    const StrNum operator +(const StrNum& rhs) const;
-    const StrNum operator *(const unsigned num) const;
-    const StrNum operator *(const StrNum& rhs) const;
+  StrNum(const StrNum &) = default;
 
+  const StrNum operator+(const StrNum &rhs) const;
+  const StrNum &operator+=(const StrNum &rhs);
+  const StrNum operator*(const StrNum &rhs) const;
+
+  const unsigned numAt(unsigned idx) const;
 };
 
-
-#endif //STRNUM_H
+#endif // STRNUM_H

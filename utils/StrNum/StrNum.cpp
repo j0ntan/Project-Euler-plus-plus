@@ -1,72 +1,110 @@
-#include <string>
 #include "StrNum.h"
+#include <algorithm>
+#include <cctype>
 
-StrNum::StrNum(unsigned init)
-        : std::string( std::to_string(init) ) {}
-
-const unsigned StrNum::operator[](unsigned idx) const {
-    std::string s(*this);
-    return static_cast<const unsigned>(s[idx]-'0');
+namespace {
+const std::string &verifyNumericalString(const std::string &str) {
+  const bool is_numerical =
+      !str.empty() and std::find_if(str.begin(), str.end(), [](char c) {
+                         return !std::isdigit(c);
+                       }) == str.end();
+  if (is_numerical)
+    return str;
+  else
+    return std::move(std::string{"0"});
 }
+
+void reverseString(std::string &str) {
+  const unsigned num_swaps = str.size() / 2;
+  for (unsigned i = 0; i < num_swaps; ++i)
+    std::swap(str[i], str[str.size() - i - 1]);
+}
+} // namespace
+
+StrNum::StrNum(const unsigned &numerical)
+    : std::string(std::to_string(numerical)) {}
+
+StrNum::StrNum(const std::string &str)
+    : std::string(verifyNumericalString(str)) {}
 
 const StrNum StrNum::operator+(const StrNum &rhs) const {
-    const StrNum *s1 = this;
-    const StrNum *s2 = &rhs;
-    if( this->size() < rhs.size() )
-        std::swap(s1,s2);
+  const StrNum *larger = this, *smaller = &rhs;
+  if (this->size() < rhs.size())
+    std::swap(larger, smaller);
 
-    std::string sum;
-    auto carry = 0u;
-    for( auto i = s1->size()-1u, j = s2->size()-1u
-            ; j >= 0 && j < s2->size(); --i,--j ) {
-        auto sum_digit = (*s1)[i] + (*s2)[j] + carry;
-        carry = sum_digit / 10;
-        sum_digit -= 10*carry;
-        sum.push_back( static_cast<char>('0'+sum_digit) );
-    }
-    for( auto i = s1->size() - s2->size() - 1
-            ; i >= 0 && i < s1->size(); --i ) {
-        auto sum_digit = (*s1)[i] + carry;
-        carry = sum_digit / 10;
-        sum_digit -= 10*carry;
-        sum.push_back( static_cast<char>('0'+sum_digit) );
-    }
-    if( carry )
-        sum.push_back( static_cast<char>('0'+carry) );
+  std::string sum;
+  unsigned carry = 0;
 
-    return std::string(sum.rbegin(),sum.rend());
+  // add the first 'smaller->size()' digits in 'larger' and 'smaller'
+  for (unsigned larger_idx = larger->size() - 1,
+                smaller_idx = smaller->size() - 1, digits_added = 0;
+       digits_added < smaller->size();
+       --larger_idx, --smaller_idx, ++digits_added) {
+    unsigned two_digit_sum = larger->numAt(larger_idx) +
+                             smaller->numAt(smaller_idx) +
+                             carry;            // any between 0-19
+    carry = two_digit_sum / 10;                // either 0 or 1
+    two_digit_sum -= 10 * carry;               // remove tens place
+    sum.append(std::to_string(two_digit_sum)); // placed in reversed order
+  }
+
+  // add 'carry' to remaining digits in 'larger'
+  const unsigned num_digits_remaining = larger->size() - smaller->size();
+  for (unsigned larger_idx = num_digits_remaining - 1, digits_added = 0;
+       digits_added < num_digits_remaining; --larger_idx, ++digits_added) {
+    unsigned digit_plus_carry = larger->numAt(larger_idx) + carry;
+    carry = digit_plus_carry / 10;
+    digit_plus_carry -= 10 * carry;
+    sum.append(std::to_string(digit_plus_carry));
+  }
+
+  // add any remaining carry
+  if (carry == 1)
+    sum.push_back('1');
+
+  // put into correct order by reversing digits
+  reverseString(sum);
+
+  return StrNum(sum);
 }
 
-const StrNum StrNum::operator*(const unsigned num) const {
-    std::string product;
-    auto carry = 0u;
-    for( auto i = this->size()-1
-            ; i >= 0 && i < this->size(); --i ) {
-        auto digit = num * (*this)[i] + carry;
-        carry = digit / 10;
-        digit -= 10 * carry;
-        product.push_back( static_cast<char>('0'+digit) );
-    }
-    if( carry != 0 )
-        product.push_back( static_cast<char>('0'+carry) );
-    return std::string( product.rbegin(),product.rend() );
+const StrNum &StrNum::operator+=(const StrNum &rhs) {
+  *this = *this + rhs;
+  return *this;
 }
 
 const StrNum StrNum::operator*(const StrNum &rhs) const {
-    const StrNum *s1 = this;
-    const StrNum *s2 = &rhs;
-    if( this->size() < rhs.size() )
-        std::swap(s1,s2);
+  const StrNum &m1 = *this; // multiplicand
+  const StrNum &m2 = rhs;   // multiplier
 
-    StrNum product;
-    for( auto i = s2->size() - 1
-            ; i >= 0 && i < s2->size(); --i ) {
-        StrNum oneDigitProduct = *this * (*s2)[i];
+  StrNum product{0};
 
-        for( auto j=i+1; j<s2->size(); ++j )
-            oneDigitProduct.push_back('0');
-        product = product + oneDigitProduct;
+  for (unsigned m2_idx = m2.size() - 1, times_multiplied = 0;
+       times_multiplied < m2.size(); --m2_idx, ++times_multiplied) {
+    unsigned carry = 0;
+    std::string sub_product(times_multiplied, '0');
+
+    for (unsigned m1_idx = m1.size() - 1, single_digit_product = 0;
+         single_digit_product < m1.size(); --m1_idx, ++single_digit_product) {
+      unsigned two_digit_product =
+          m1.numAt(m1_idx) * m2.numAt(m2_idx) + carry; // any between 0-90
+      carry = two_digit_product / 10;                  // any between 0-9
+      two_digit_product -= 10 * carry;                 // remove tens place
+      sub_product.append(
+          std::to_string(two_digit_product)); // placed in reverse order
     }
 
-    return product;
+    if (carry > 0)
+      sub_product.append(std::to_string(carry));
+
+    reverseString(sub_product);
+
+    product += StrNum(sub_product);
+  }
+
+  return product;
+}
+
+const unsigned StrNum::numAt(unsigned idx) const {
+  return static_cast<const unsigned>(std::stoi(this->substr(idx, 1)));
 }
