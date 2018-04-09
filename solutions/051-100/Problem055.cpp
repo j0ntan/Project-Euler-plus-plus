@@ -25,7 +25,12 @@
  *
  * How many Lychrel numbers are there below ten-thousand? */
 
+#include "../../utils/StrNum/StrNum.h"
+#include "../../utils/utils.h"
 #include <iostream>
+
+// function prototypes
+StrNum reverseDigits(const StrNum &num);
 
 int main() {
   const unsigned NUMBERS_LIMIT = 10'000;
@@ -34,15 +39,16 @@ int main() {
   unsigned lychrel_number_count = 0;
   for (unsigned number = 0; number < NUMBERS_LIMIT; number++) {
     bool is_palindrome = false;
+    StrNum original(number);
     for (unsigned iter_count = 1;
          iter_count < ITERATION_LIMIT and not is_palindrome; iter_count++) {
-      // convert num to str
+      StrNum reverse = reverseDigits(original);
 
-      // create the reverse of original
+      StrNum sum = original + reverse;
 
-      // add original with reverse
+      is_palindrome = projEuler::isPalindrome(sum);
 
-      // check if palindrome
+      original = sum;
     }
     if (not is_palindrome)
       lychrel_number_count++;
@@ -50,6 +56,16 @@ int main() {
 
   std::cout << "There are " << lychrel_number_count
             << " Lychrel numbers below ten-thousand.";
+}
+
+StrNum reverseDigits(const StrNum &num) {
+  StrNum reversed(num);
+
+  const unsigned num_swaps = reversed.size() / 2;
+  for (unsigned i = 0; i < num_swaps; ++i)
+    std::swap(reversed[i], reversed[reversed.size() - i - 1]);
+
+  return reversed;
 }
 
 /* Thought process:
