@@ -11,7 +11,42 @@
  * difference are pentagonal and D = |P_k − P_j| is minimised; what is the
  * value of D? */
 
+#include <cmath>
+#include <iostream>
+#include <vector>
+
+// function prototypes
+std::vector<unsigned> createPentagonalList(unsigned size);
+bool is_pentagonal(unsigned P_n);
+
 int main() {
+  const unsigned SIZE = 10000;
+  std::vector<unsigned> pentagonals = createPentagonalList(SIZE);
+  unsigned min_difference = pentagonals.back();
+
+  for (unsigned j = 0; j < pentagonals.size() - 2; ++j)
+    for (unsigned k = j + 1; k < pentagonals.size() - 1; ++k) {
+      const unsigned &P_j = pentagonals[j];
+      const unsigned &P_k = pentagonals[k];
+      if (is_pentagonal(P_k + P_j) and is_pentagonal(P_k - P_j))
+        min_difference = std::min(P_k - P_j, min_difference);
+    }
+
+  std::cout << "Value of D is " << min_difference;
+}
+
+unsigned nth_pentagonal(unsigned n) { return n * (3 * n - 1) / 2; }
+
+std::vector<unsigned> createPentagonalList(unsigned size) {
+  std::vector<unsigned> pentagonals;
+  for (unsigned n = 1; n <= size; ++n)
+    pentagonals.emplace_back(nth_pentagonal(n));
+  return pentagonals;
+}
+
+bool is_pentagonal(unsigned P_n) {
+  const double n = (1 + std::sqrt(1 + 24 * P_n)) / 6;
+  return std::floor(n) == n;
 }
 
 /* Thought process
