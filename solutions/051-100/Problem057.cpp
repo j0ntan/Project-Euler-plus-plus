@@ -21,12 +21,13 @@
 #include <algorithm>
 #include <iostream>
 
+typedef unsigned long long ull;
+
 class fraction {
 public:
   fraction() = default;
-  fraction(unsigned numer, unsigned denom)
-      : numerator(numer), denominator(denom) {}
-  fraction(unsigned numer, const fraction &f)
+  fraction(ull numer, ull denom) : numerator(numer), denominator(denom) {}
+  fraction(ull numer, const fraction &f)
       : numerator(numer * f.denominator), denominator(f.numerator) {}
 
   fraction(const fraction &rhs) = default;
@@ -37,17 +38,17 @@ public:
     if (this->denominator == rhs.denominator)
       f = fraction{(this->numerator + rhs.numerator), this->denominator};
     else {
-      unsigned lcm = LCM(this->denominator, rhs.denominator);
-      unsigned multiple1 = lcm / this->denominator,
-               multiple2 = lcm / rhs.denominator;
+      ull lcm = LCM(this->denominator, rhs.denominator);
+      ull multiple1 = lcm / this->denominator,
+          multiple2 = lcm / rhs.denominator;
       f = fraction{(multiple1 * this->numerator + multiple2 * rhs.numerator),
                    lcm};
     }
     return f;
   }
 
-  const unsigned numer() const { return numerator; }
-  const unsigned denom() const { return denominator; }
+  const ull numer() const { return numerator; }
+  const ull denom() const { return denominator; }
 
   friend std::ostream &operator<<(std::ostream &os, const fraction &f) {
     os << "{ " << f.numerator << " / " << f.denominator << " }";
@@ -55,18 +56,16 @@ public:
   }
 
 private:
-  unsigned GCD(unsigned a, unsigned b) const {
+  ull GCD(ull a, ull b) const {
     if (b == 0)
       return a;
     else
       return GCD(b, a % b);
   }
 
-  unsigned LCM(unsigned num1, unsigned num2) const {
-    return num1 * num2 / GCD(num1, num2);
-  }
+  ull LCM(ull num1, ull num2) const { return num1 * num2 / GCD(num1, num2); }
 
-  unsigned numerator = 0, denominator = 1;
+  ull numerator = 0, denominator = 1;
 };
 
 // function prototypes
@@ -77,21 +76,21 @@ int main() {
   unsigned larger_numer_digits = 0;
 
   fraction fractional_denominator{2, 1};
-  for (unsigned iterations = 1; iterations < 25; ++iterations) {
+  for (unsigned iterations = 1; iterations < 50; ++iterations) {
     fractional_denominator =
         fraction{2, 1} + fraction{1, fractional_denominator};
     if (numerExceedsDenom(fraction{1, 1} + fraction{1, fractional_denominator}))
       ++larger_numer_digits;
   }
 
-  // print 25th iteration
+  // print 51th iteration
   std::cout << fraction{1, 1} + fraction{1, fractional_denominator}
             << std::endl;
 
   std::cout << "result = " << larger_numer_digits;
 }
 
-unsigned countDigits(unsigned n) {
+ull countDigits(ull n) {
   if (n > 0)
     return 1 + countDigits(n / 10);
   else
@@ -115,4 +114,6 @@ fraction continueTheFraction(unsigned iterations) {
  * {4,478,554,083 / 3,166,815,962}. The numerator for this resulting fraction
  * overflows for 'unsigned int' type (2^32 - 1). Thus, we can next try using an
  * 'unsigned long long' type within the fraction class. In case this still
- * overflows, we can then try a string-based number representation. */
+ * overflows, we can then try a string-based number representation.
+ * 3. After changing the fraction underlying type to 'unsigned long long', there
+ * is still some overflow on the 51st iteration. */
