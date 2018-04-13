@@ -21,9 +21,6 @@
 #include <algorithm>
 #include <iostream>
 
-// function prototypes
-unsigned countDigits(unsigned n);
-
 class fraction {
 public:
   fraction() = default;
@@ -72,12 +69,23 @@ private:
   unsigned numerator = 0, denominator = 1;
 };
 
+// function prototypes
+bool numerExceedsDenom(const fraction &f);
+
 int main() {
   const unsigned EXPANSIONS = 1'000;
   unsigned larger_numer_digits = 0;
 
-  // testing fraction class
-  std::cout << fraction{1, 1} + fraction{1, fraction{2, 1} + fraction{1, 2}}
+  fraction fractional_denominator{2, 1};
+  for (unsigned iterations = 1; iterations < 25; ++iterations) {
+    fractional_denominator =
+        fraction{2, 1} + fraction{1, fractional_denominator};
+    if (numerExceedsDenom(fraction{1, 1} + fraction{1, fractional_denominator}))
+      ++larger_numer_digits;
+  }
+
+  // print 25th iteration
+  std::cout << fraction{1, 1} + fraction{1, fractional_denominator}
             << std::endl;
 
   std::cout << "result = " << larger_numer_digits;
@@ -90,5 +98,21 @@ unsigned countDigits(unsigned n) {
     return 0;
 }
 
+bool numerExceedsDenom(const fraction &f) {
+  return countDigits(f.numer()) > countDigits(f.denom());
+}
+
+fraction continueTheFraction(unsigned iterations) {
+  if (--iterations == 0)
+    return fraction{2, 1};
+  return fraction{2, 1} + fraction{1, continueTheFraction(iterations)};
+}
+
 /* Thought process
- * 1. This problem seems like a good fit for a recursive solution. */
+ * 1. This problem seems like a good fit for a recursive solution.
+ * 2. First solution attempt fails, specifically at the 25th iteration. On this
+ * iteration, we attempt to add 1 + {1,311,738,121 / 3,166,815,962} =
+ * {4,478,554,083 / 3,166,815,962}. The numerator for this resulting fraction
+ * overflows for 'unsigned int' type (2^32 - 1). Thus, we can next try using an
+ * 'unsigned long long' type within the fraction class. In case this still
+ * overflows, we can then try a string-based number representation. */
