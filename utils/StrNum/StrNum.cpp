@@ -1,6 +1,7 @@
 #include "StrNum.h"
 #include <algorithm>
 #include <cctype>
+#include <iostream>
 
 namespace {
 const std::string &verifyNumericalString(const std::string &str) {
@@ -12,6 +13,19 @@ const std::string &verifyNumericalString(const std::string &str) {
     return str;
   else
     return std::move(std::string{"0"});
+}
+
+void exitOnNegativeDifference(const StrNum &lhs, const StrNum &rhs) {
+  std::cerr << lhs << " - " << rhs << " results in a negative number"
+            << std::endl;
+  std::cerr << "Negative integers not yet supported." << std::endl;
+  exit(1);
+}
+
+void removeLeadingZeros(std::string &str) {
+  // NOTE: since string is reversed, zeros are at the end
+  while (str.size() > 1 and str.back() == '0')
+    str.pop_back();
 }
 
 void reverseString(std::string &str) {
@@ -26,6 +40,29 @@ StrNum::StrNum(const unsigned &numerical)
 
 StrNum::StrNum(const std::string &str)
     : std::string(verifyNumericalString(str)) {}
+
+bool StrNum ::operator<(const StrNum &rhs) const {
+  bool less_than = false;
+
+  if (this->size() == rhs.size())
+    for (unsigned i = 0; i < this->size() and !less_than; ++i)
+      less_than = this->numAt(i) < rhs.numAt(i);
+  else
+    less_than = this->size() < rhs.size();
+
+  return less_than;
+}
+
+bool StrNum::operator==(const StrNum &rhs) const {
+  bool same_size = this->size() == rhs.size();
+
+  bool same_elements = true;
+  if (same_size)
+    for (unsigned i = 0; i < this->size(); ++i)
+      same_elements = this->numAt(i) == rhs.numAt(i);
+
+  return same_size and same_elements;
+}
 
 const StrNum StrNum::operator+(const StrNum &rhs) const {
   const StrNum *larger = this, *smaller = &rhs;
@@ -66,6 +103,67 @@ const StrNum StrNum::operator+(const StrNum &rhs) const {
   reverseString(sum);
 
   return StrNum(sum);
+}
+
+const StrNum StrNum::operator-(const StrNum &rhs) const {
+  std::string difference;
+
+  // working with unsigned integers only for now
+  if (*this < rhs) {
+    exitOnNegativeDifference(*this, rhs);
+  } else if (*this == rhs)
+    difference = "0";
+  else {
+    bool borrowed_from = false;
+
+    // get difference of first 'rhs.size()' digits
+    for (unsigned larger_idx = this->size() - 1, smaller_idx = rhs.size() - 1,
+                  digits_subtracted = 0;
+         digits_subtracted < rhs.size();
+         --larger_idx, --smaller_idx, ++digits_subtracted) {
+      auto minuend = this->numAt(larger_idx),
+           subtrahend = rhs.numAt(smaller_idx);
+
+      if (borrowed_from and minuend == 0) {
+        difference.append(std::to_string(9 - subtrahend));
+        borrowed_from = true;
+      } else {
+        if (borrowed_from and minuend > 0)
+          --minuend;
+
+        borrowed_from = minuend < subtrahend;
+
+        if (borrowed_from)
+          difference.append(std::to_string((10 + minuend) - subtrahend));
+        else
+          difference.append(std::to_string(minuend - subtrahend));
+      }
+    }
+
+    // borrow from remaining digits if needed
+    const unsigned num_digits_remaining = this->size() - rhs.size();
+    for (unsigned larger_idx = num_digits_remaining - 1,
+                  digits_borrowed_from = 0;
+         digits_borrowed_from < num_digits_remaining;
+         --larger_idx, ++digits_borrowed_from) {
+      auto remaining_digit = this->numAt(larger_idx);
+
+      if (borrowed_from and remaining_digit == 0) {
+        difference.append(std::to_string(9));
+        borrowed_from = true;
+      } else if (borrowed_from and remaining_digit > 0) {
+        difference.append(std::to_string(--remaining_digit));
+        borrowed_from = false;
+      } else
+        difference.append(std::to_string(remaining_digit));
+    }
+  }
+
+  removeLeadingZeros(difference);
+
+  reverseString(difference);
+
+  return StrNum(difference);
 }
 
 const StrNum &StrNum::operator+=(const StrNum &rhs) {
