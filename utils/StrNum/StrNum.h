@@ -15,6 +15,7 @@ public:
   const StrNum operator+(const StrNum &rhs) const;
   const StrNum operator-(const StrNum &rhs) const;
   const StrNum &operator+=(const StrNum &rhs);
+  const StrNum &operator-=(const StrNum &rhs);
   const StrNum operator*(const StrNum &rhs) const;
 
   const unsigned numAt(unsigned idx) const;

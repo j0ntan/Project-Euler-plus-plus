@@ -171,6 +171,11 @@ const StrNum &StrNum::operator+=(const StrNum &rhs) {
   return *this;
 }
 
+const StrNum &StrNum::operator-=(const StrNum &rhs) {
+  *this = *this - rhs;
+  return *this;
+}
+
 const StrNum StrNum::operator*(const StrNum &rhs) const {
   const StrNum &m1 = *this; // multiplicand
   const StrNum &m2 = rhs;   // multiplier
