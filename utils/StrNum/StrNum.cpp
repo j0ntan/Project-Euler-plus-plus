@@ -2,6 +2,7 @@
 #include <algorithm>
 #include <cctype>
 #include <iostream>
+#include <utility>
 
 namespace {
 const std::string &verifyNumericalString(const std::string &str) {
@@ -31,6 +32,58 @@ void reverseString(std::string &str) {
   const unsigned num_swaps = str.size() / 2;
   for (unsigned i = 0; i < num_swaps; ++i)
     std::swap(str[i], str[str.size() - i - 1]);
+}
+
+void appendNextDigit(StrNum &partial_dividend, unsigned next_digit) {
+  partial_dividend = partial_dividend * StrNum{10} + StrNum{next_digit};
+}
+
+unsigned findNearestMultiple(const StrNum &divisor,
+                             const StrNum &partial_dividend) {
+  unsigned initial_guess = 0;
+  if (divisor.size() == partial_dividend.size())
+    initial_guess = partial_dividend.numAt(0) / divisor.numAt(0);
+  else
+    initial_guess =
+        (10 * partial_dividend.numAt(0) + partial_dividend.numAt(1)) /
+        divisor.numAt(0);
+
+  while (partial_dividend < (divisor * StrNum{initial_guess}))
+    --initial_guess;
+
+  return initial_guess;
+}
+
+std::pair<StrNum, StrNum> longDivision(const StrNum &dividend,
+                                       const StrNum &divisor) {
+  std::string quotient, remainder;
+
+  if (dividend.size() < divisor.size()) {
+    quotient = "0";
+    remainder = divisor; // no object slicing occurs
+  } else {
+    StrNum partial_dividend{0};
+
+    for (unsigned current_idx = 0; current_idx < dividend.size();
+         ++current_idx) {
+      appendNextDigit(partial_dividend, dividend.numAt(current_idx));
+
+      if (divisor <= partial_dividend) {
+        auto quotient_digit = findNearestMultiple(divisor, partial_dividend);
+        quotient.append(std::to_string(quotient_digit));
+        partial_dividend -= divisor * StrNum{quotient_digit};
+      } else
+        quotient.append("0");
+    }
+
+    remainder = partial_dividend;
+
+    reverseString(quotient);       // move zeros from front to back
+    removeTrailingZeros(quotient); // remove those zeros
+    reverseString(quotient);       // correct the final order
+  }
+
+  return std::make_pair(StrNum{quotient}, StrNum{remainder});
 }
 } // namespace
 
@@ -64,6 +117,10 @@ bool StrNum::operator==(const StrNum &rhs) const {
       same_elements = this->numAt(i) == rhs.numAt(i);
 
   return same_size and same_elements;
+}
+
+bool StrNum::operator<=(const StrNum &rhs) const {
+  return *this == rhs or *this < rhs;
 }
 
 const StrNum StrNum::operator+(const StrNum &rhs) const {
@@ -210,6 +267,14 @@ const StrNum StrNum::operator*(const StrNum &rhs) const {
   }
 
   return product;
+}
+
+const StrNum StrNum::operator/(const StrNum &rhs) const {
+  return longDivision(*this, rhs).first;
+}
+
+const StrNum StrNum::operator%(const StrNum &rhs) const {
+  return longDivision(*this, rhs).second;
 }
 
 const unsigned StrNum::numAt(unsigned idx) const {
