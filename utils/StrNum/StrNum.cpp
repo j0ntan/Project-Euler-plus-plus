@@ -43,10 +43,13 @@ StrNum::StrNum(const std::string &str)
 bool StrNum ::operator<(const StrNum &rhs) const {
   bool less_than = false;
 
-  if (this->size() == rhs.size())
-    for (unsigned i = 0; i < this->size() and !less_than; ++i)
-      less_than = this->numAt(i) < rhs.numAt(i);
-  else
+  if (this->size() == rhs.size()) {
+    for (unsigned i = 0; i < this->size(); ++i)
+      if (this->numAt(i) != rhs.numAt(i)) {
+        less_than = this->numAt(i) < rhs.numAt(i);
+        break;
+      }
+  } else
     less_than = this->size() < rhs.size();
 
   return less_than;
@@ -57,7 +60,7 @@ bool StrNum::operator==(const StrNum &rhs) const {
 
   bool same_elements = true;
   if (same_size)
-    for (unsigned i = 0; i < this->size(); ++i)
+    for (unsigned i = 0; i < this->size() and same_elements; ++i)
       same_elements = this->numAt(i) == rhs.numAt(i);
 
   return same_size and same_elements;
@@ -97,6 +100,8 @@ const StrNum StrNum::operator+(const StrNum &rhs) const {
   // add any remaining carry
   if (carry == 1)
     sum.push_back('1');
+
+  removeTrailingZeros(sum);
 
   // put into correct order by reversing digits
   reverseString(sum);
