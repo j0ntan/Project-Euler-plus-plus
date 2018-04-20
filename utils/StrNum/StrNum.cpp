@@ -22,8 +22,7 @@ void exitOnNegativeDifference(const StrNum &lhs, const StrNum &rhs) {
   exit(1);
 }
 
-void removeLeadingZeros(std::string &str) {
-  // NOTE: since string is reversed, zeros are at the end
+void removeTrailingZeros(std::string &str) {
   while (str.size() > 1 and str.back() == '0')
     str.pop_back();
 }
@@ -159,7 +158,7 @@ const StrNum StrNum::operator-(const StrNum &rhs) const {
     }
   }
 
-  removeLeadingZeros(difference);
+  removeTrailingZeros(difference);
 
   reverseString(difference);
 
