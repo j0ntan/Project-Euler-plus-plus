@@ -280,3 +280,37 @@ const StrNum StrNum::operator%(const StrNum &rhs) const {
 const unsigned StrNum::numAt(unsigned idx) const {
   return static_cast<const unsigned>(std::stoi(this->substr(idx, 1)));
 }
+
+std::ostream &operator<<(std::ostream &os, const StrNum &num) {
+  if (num.size() <= 3)
+    os << static_cast<std::string>(num);
+  else {
+    const unsigned digits_before_first_comma = num.size() % 3;
+    unsigned i = 0;
+
+    // print first digit(s) & first comma
+    if (digits_before_first_comma != 0) {
+      while (i < digits_before_first_comma) {
+        os << num.numAt(i);
+        ++i;
+      }
+      os << ',';
+    }
+
+    // print comma after every 3 digits
+    unsigned digits_printed = 0;
+    while (i < num.size()) {
+      os << num.numAt(i);
+      ++digits_printed;
+
+      if (digits_printed == 3 and i < num.size() - 3) {
+        os << ',';
+        digits_printed = 0;
+      }
+
+      ++i;
+    }
+  }
+
+  return os;
+}

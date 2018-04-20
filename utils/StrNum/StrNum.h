@@ -1,6 +1,7 @@
 #ifndef STRNUM_H
 #define STRNUM_H
 
+#include <iostream>
 #include <string>
 
 class StrNum : public std::string {
@@ -22,6 +23,8 @@ public:
   const StrNum operator%(const StrNum &rhs) const;
 
   const unsigned numAt(unsigned idx) const;
+
+  friend std::ostream &operator<<(std::ostream &os, const StrNum &num);
 };
 
 #endif // STRNUM_H
