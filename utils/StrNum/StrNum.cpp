@@ -274,7 +274,12 @@ const StrNum StrNum::operator/(const StrNum &rhs) const {
 }
 
 const StrNum StrNum::operator%(const StrNum &rhs) const {
-  return longDivision(*this, rhs).second;
+  StrNum mod;
+  if (*this < rhs)
+    mod = *this;
+  else
+    mod = longDivision(*this, rhs).second;
+  return mod;
 }
 
 const unsigned StrNum::numAt(unsigned idx) const {
