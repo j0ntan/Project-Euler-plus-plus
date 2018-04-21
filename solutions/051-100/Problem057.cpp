@@ -38,17 +38,8 @@ public:
   fraction &operator=(const fraction &rhs) = default;
 
   const fraction operator+(const fraction &rhs) const {
-    fraction f;
-    if (this->denominator == rhs.denominator)
-      f = fraction{(this->numerator + rhs.numerator), this->denominator};
-    else {
-      StrNum lcm = LCM(this->denominator, rhs.denominator);
-      StrNum multiple1 = lcm / this->denominator,
-             multiple2 = lcm / rhs.denominator;
-      f = fraction{(multiple1 * this->numerator + multiple2 * rhs.numerator),
-                   lcm};
-    }
-    return f;
+    return fraction{(this->numerator * rhs.denominator + rhs.numerator),
+                    rhs.denominator};
   }
 
   const StrNum numer() const { return numerator; }
@@ -60,6 +51,7 @@ public:
   }
 
 private:
+  /*
   StrNum GCD(const StrNum &a, const StrNum &b) const {
     if (b == StrNum{0})
       return a;
@@ -70,6 +62,7 @@ private:
   StrNum LCM(const StrNum &num1, const StrNum &num2) const {
     return num1 * num2 / GCD(num1, num2);
   }
+  */
 
   StrNum numerator{0}, denominator{1};
 };
@@ -82,29 +75,27 @@ int main() {
   unsigned larger_numer_digits = 0;
 
   fraction fractional_denominator{2, 1};
-  for (unsigned iterations = 1; iterations < 50; ++iterations) {
+  for (unsigned iterations = 1; iterations < EXPANSIONS; ++iterations) {
     fractional_denominator =
         fraction{2, 1} + fraction{1, fractional_denominator};
     if (numerExceedsDenom(fraction{1, 1} + fraction{1, fractional_denominator}))
       ++larger_numer_digits;
   }
 
-  // print the last iteration
-  std::cout << fraction{1, 1} + fraction{1, fractional_denominator}
-            << std::endl;
-
   std::cout << "result = " << larger_numer_digits;
 }
 
+/*
 StrNum countDigits(const StrNum &n) {
   if (StrNum{0} < n)
     return StrNum{1} + countDigits(n / StrNum{10});
   else
     return StrNum{0};
 }
+*/
 
-bool numerExceedsDenom(const fraction &f) {
-  return countDigits(f.denom()) < countDigits(f.numer());
+inline bool numerExceedsDenom(const fraction &f) {
+  return f.numer().size() > f.denom().size();
 }
 
 /*
