@@ -18,16 +18,20 @@
  * In the first one-thousand expansions, how many fractions contain a numerator
  * with more digits than denominator? */
 
+#include "../../utils/StrNum/StrNum.h"
 #include <algorithm>
 #include <iostream>
-
-typedef unsigned long long ull;
 
 class fraction {
 public:
   fraction() = default;
-  fraction(ull numer, ull denom) : numerator(numer), denominator(denom) {}
-  fraction(ull numer, const fraction &f)
+  fraction(const unsigned &numer, const unsigned &denom)
+      : numerator(StrNum{numer}), denominator(StrNum{denom}) {}
+  fraction(const StrNum &numer, const StrNum &denom)
+      : numerator(numer), denominator(denom) {}
+  fraction(const unsigned &numer, const fraction &f)
+      : numerator(StrNum{numer} * f.denominator), denominator(f.numerator) {}
+  fraction(const StrNum &numer, const fraction &f)
       : numerator(numer * f.denominator), denominator(f.numerator) {}
 
   fraction(const fraction &rhs) = default;
@@ -38,17 +42,17 @@ public:
     if (this->denominator == rhs.denominator)
       f = fraction{(this->numerator + rhs.numerator), this->denominator};
     else {
-      ull lcm = LCM(this->denominator, rhs.denominator);
-      ull multiple1 = lcm / this->denominator,
-          multiple2 = lcm / rhs.denominator;
+      StrNum lcm = LCM(this->denominator, rhs.denominator);
+      StrNum multiple1 = lcm / this->denominator,
+             multiple2 = lcm / rhs.denominator;
       f = fraction{(multiple1 * this->numerator + multiple2 * rhs.numerator),
                    lcm};
     }
     return f;
   }
 
-  const ull numer() const { return numerator; }
-  const ull denom() const { return denominator; }
+  const StrNum numer() const { return numerator; }
+  const StrNum denom() const { return denominator; }
 
   friend std::ostream &operator<<(std::ostream &os, const fraction &f) {
     os << "{ " << f.numerator << " / " << f.denominator << " }";
@@ -56,16 +60,18 @@ public:
   }
 
 private:
-  ull GCD(ull a, ull b) const {
-    if (b == 0)
+  StrNum GCD(const StrNum &a, const StrNum &b) const {
+    if (b == StrNum{0})
       return a;
     else
       return GCD(b, a % b);
   }
 
-  ull LCM(ull num1, ull num2) const { return num1 * num2 / GCD(num1, num2); }
+  StrNum LCM(const StrNum &num1, const StrNum &num2) const {
+    return num1 * num2 / GCD(num1, num2);
+  }
 
-  ull numerator = 0, denominator = 1;
+  StrNum numerator{0}, denominator{1};
 };
 
 // function prototypes
@@ -83,29 +89,31 @@ int main() {
       ++larger_numer_digits;
   }
 
-  // print 51th iteration
+  // print the last iteration
   std::cout << fraction{1, 1} + fraction{1, fractional_denominator}
             << std::endl;
 
   std::cout << "result = " << larger_numer_digits;
 }
 
-ull countDigits(ull n) {
-  if (n > 0)
-    return 1 + countDigits(n / 10);
+StrNum countDigits(const StrNum &n) {
+  if (StrNum{0} < n)
+    return StrNum{1} + countDigits(n / StrNum{10});
   else
-    return 0;
+    return StrNum{0};
 }
 
 bool numerExceedsDenom(const fraction &f) {
-  return countDigits(f.numer()) > countDigits(f.denom());
+  return countDigits(f.denom()) < countDigits(f.numer());
 }
 
+/*
 fraction continueTheFraction(unsigned iterations) {
   if (--iterations == 0)
     return fraction{2, 1};
   return fraction{2, 1} + fraction{1, continueTheFraction(iterations)};
 }
+*/
 
 /* Thought process
  * 1. This problem seems like a good fit for a recursive solution.
@@ -116,4 +124,14 @@ fraction continueTheFraction(unsigned iterations) {
  * 'unsigned long long' type within the fraction class. In case this still
  * overflows, we can then try a string-based number representation.
  * 3. After changing the fraction underlying type to 'unsigned long long', there
- * is still some overflow on the 51st iteration. */
+ * is still some overflow on the 51st iteration.
+ * 4. The 'StrNum' implementation produces good results and does not have the
+ * overflow problem on the 51st iteration like the previous implementation. Some
+ * improvements can be made on several observations. Every occurrence of the sum
+ * of two fractions includes one fraction that has a denominator of one. This
+ * means that the least common multiple is simply the larger denominator. There
+ * is no need to recursively look for greatest common divisor (GCD), thus we can
+ * save on these function calls. Another improvement comes from the fact that
+ * the numbers are string-based, so that the number of digits is simply the size
+ * of the string. Again, there is no need to recursively call the function that
+ * calculates the number of digits in a given number. */
