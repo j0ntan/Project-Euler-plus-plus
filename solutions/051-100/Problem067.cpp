@@ -41,7 +41,7 @@ int main() {
 
   for (unsigned row = 1; row < 100; ++row) {
     const auto adjacent_nums = readAdjacentNums(file, path_num_index);
-    if(adjacent_nums.first > adjacent_nums.second)
+    if (adjacent_nums.first > adjacent_nums.second)
       path_nums[row] = adjacent_nums.first;
     else {
       path_nums[row] = adjacent_nums.second;
@@ -110,4 +110,12 @@ std::pair<unsigned, unsigned> readAdjacentNums(std::ifstream &file,
  * at the next row and further, we only need to consider the adjacent numbers
  * and can ignore the rest of the numbers on that row. So we can just take the
  * larger of the adjacent numbers, and move on to the next row, continuing in
- * the same fashion until we reach the bottom. */
+ * the same fashion until we reach the bottom.
+ * 4. After getting a wrong answer, we debug and verify that the functions used
+ * are working correctly. This indicates that there is a problem with the
+ * algorithm used. Upon looking at other solutions and approaches, we can
+ * conclude that there was an initial misunderstanding of the problem. It is not
+ * enough to look at the maximum of the adjacent numbers because another route
+ * may contain larger numbers in the rows further below. This problem requires a
+ * dynamic programming solution, which first requires a better understanding of
+ * dynamic programming in general. */
