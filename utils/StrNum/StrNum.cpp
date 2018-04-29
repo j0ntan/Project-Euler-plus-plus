@@ -95,7 +95,7 @@ StrNum::StrNum(const std::string &str)
 
 StrNum::StrNum(const char &c) : std::string(1, c) {}
 
-bool StrNum ::operator<(const StrNum &rhs) const {
+bool StrNum::operator<(const StrNum &rhs) const {
   bool less_than = false;
 
   if (this->size() == rhs.size()) {
@@ -110,6 +110,8 @@ bool StrNum ::operator<(const StrNum &rhs) const {
   return less_than;
 }
 
+bool StrNum::operator>(const StrNum &rhs) const { return !(*this <= rhs); }
+
 bool StrNum::operator==(const StrNum &rhs) const {
   bool same_size = this->size() == rhs.size();
 
@@ -121,8 +123,14 @@ bool StrNum::operator==(const StrNum &rhs) const {
   return same_size and same_elements;
 }
 
+bool StrNum::operator!=(const StrNum &rhs) const { return !(*this == rhs); }
+
 bool StrNum::operator<=(const StrNum &rhs) const {
   return *this == rhs or *this < rhs;
+}
+
+bool StrNum::operator>=(const StrNum &rhs) const {
+  return (*this > rhs) or (*this == rhs);
 }
 
 const StrNum StrNum::operator+(const StrNum &rhs) const {
