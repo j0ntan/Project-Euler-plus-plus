@@ -8,6 +8,7 @@ class StrNum : public std::string {
 public:
   explicit StrNum(const unsigned &numerical = 0);
   explicit StrNum(const std::string &str);
+  explicit StrNum(const char &c);
 
   StrNum(const StrNum &) = default;
 

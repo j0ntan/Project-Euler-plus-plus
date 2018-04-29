@@ -35,7 +35,7 @@ void reverseString(std::string &str) {
 }
 
 void appendNextDigit(StrNum &partial_dividend, unsigned next_digit) {
-  partial_dividend = partial_dividend * StrNum{10} + StrNum{next_digit};
+  partial_dividend = partial_dividend * StrNum{10u} + StrNum{next_digit};
 }
 
 unsigned findNearestMultiple(const StrNum &divisor,
@@ -62,7 +62,7 @@ std::pair<StrNum, StrNum> longDivision(const StrNum &dividend,
     quotient = "0";
     remainder = divisor; // no object slicing occurs
   } else {
-    StrNum partial_dividend{0};
+    StrNum partial_dividend{0u};
 
     for (unsigned current_idx = 0; current_idx < dividend.size();
          ++current_idx) {
@@ -92,6 +92,8 @@ StrNum::StrNum(const unsigned &numerical)
 
 StrNum::StrNum(const std::string &str)
     : std::string(verifyNumericalString(str)) {}
+
+StrNum::StrNum(const char &c) : std::string(1, c) {}
 
 bool StrNum ::operator<(const StrNum &rhs) const {
   bool less_than = false;
@@ -241,7 +243,7 @@ const StrNum StrNum::operator*(const StrNum &rhs) const {
   const StrNum &m1 = *this; // multiplicand
   const StrNum &m2 = rhs;   // multiplier
 
-  StrNum product{0};
+  StrNum product{0u};
 
   for (unsigned m2_idx = m2.size() - 1, times_multiplied = 0;
        times_multiplied < m2.size(); --m2_idx, ++times_multiplied) {
