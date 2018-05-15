@@ -10,8 +10,51 @@
  * file so as to determine the shortest possible secret passcode of unknown
  * length. */
 
-int main() {
+#include "../../utils/StrNum/StrNum.h"
+#include <algorithm>
+#include <fstream>
+#include <iostream>
+#include <vector>
 
+// function prototypes
+std::vector<StrNum> readKeylog(const char *filename);
+void sortAndRemoveDuplicates(std::vector<StrNum> &keys);
+
+int main() {
+  StrNum passcode;
+  auto keys =
+      readKeylog("../../../solutions/051-100/Problem079/p079_keylog.txt");
+
+  sortAndRemoveDuplicates(keys);
+
+  std::cout << "Passcode is " << passcode;
+}
+
+std::vector<StrNum> readKeylog(const char *filename) {
+  std::ifstream file(filename);
+  if (file.fail()) {
+    std::cerr << "Failed to open the file" << std::endl;
+    exit(1);
+  }
+
+  StrNum line;
+  std::vector<StrNum> keys;
+  keys.reserve(50);
+
+  while (file.good()) {
+    std::getline(file, line);
+    keys.push_back(line);
+  }
+
+  keys.pop_back(); // remove empty string that was stored from EOF
+
+  return keys;
+}
+
+void sortAndRemoveDuplicates(std::vector<StrNum> &keys) {
+  std::sort(keys.begin(), keys.end());
+  auto new_end = std::unique(keys.begin(), keys.end());
+  keys.erase(new_end, keys.end());
 }
 
 /* First thoughts
@@ -22,7 +65,5 @@ int main() {
  * valid for that particular key.
  * 2. This problem  becomes easier to analyze if we sort the keys and remove any
  * duplicates.
- * 3. There are three cases where the passcode can be invalid, given a
- * particular key and the order of its digits. Either 1 digit in the sequence is
- * missing, 2 digits in the sequence are missing, or the entire sequence is
- * missing. */
+ * 3. If the entire sequence is not found within the passcode, we can just add
+ * those digits to the end of the passcode. */
