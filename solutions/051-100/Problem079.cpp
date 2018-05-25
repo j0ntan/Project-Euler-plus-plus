@@ -57,6 +57,40 @@ void sortAndRemoveDuplicates(std::vector<StrNum> &keys) {
   keys.erase(new_end, keys.end());
 }
 
+bool containsKey(const StrNum &key, const StrNum &passcode) {
+  const auto first_location =
+      std::find(passcode.cbegin(), passcode.cend(), key[0]);
+  const auto second_location =
+      std::find(first_location, passcode.cend(), key[1]);
+  const auto third_location =
+      std::find(second_location, passcode.cend(), key[2]);
+  return first_location != passcode.cend() and
+         second_location != passcode.cend() and
+         third_location != passcode.cend();
+}
+
+bool containsUnorderedKey(const StrNum &missing_key, const StrNum &passcode) {
+  const bool found_first = std::find(passcode.cbegin(), passcode.cend(),
+                                     missing_key[0]) != passcode.cend();
+  const bool found_second = std::find(passcode.cbegin(), passcode.cend(),
+                                      missing_key[1]) != passcode.cend();
+  const bool found_third = std::find(passcode.cbegin(), passcode.cend(),
+                                     missing_key[2]) != passcode.cend();
+  return found_first and found_second and found_third;
+}
+
+bool rangeOfKeysValid(const StrNum &passcode,
+                      const std::vector<StrNum>::const_iterator &first_key_it,
+                      const std::vector<StrNum>::const_iterator &last_key_it) {
+  auto this_key_it = first_key_it;
+  bool all_keys_valid = true;
+  while (all_keys_valid and this_key_it != last_key_it + 1) {
+    all_keys_valid = containsKey(*this_key_it, passcode);
+    ++this_key_it;
+  }
+  return all_keys_valid;
+}
+
 /* First thoughts
  * 1. This problem requires storing and updating the passcode as we look at each
  * new key. The passcode must be valid for every key in the file. This means
