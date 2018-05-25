@@ -19,13 +19,20 @@
 // function prototypes
 std::vector<StrNum> readKeylog(const char *filename);
 void sortAndRemoveDuplicates(std::vector<StrNum> &keys);
+void validateNewKey(const std::vector<StrNum>::const_iterator &first_key,
+                    const std::vector<StrNum>::const_iterator &last_key,
+                    StrNum &passcode);
 
 int main() {
-  StrNum passcode;
   auto keys =
       readKeylog("../../../solutions/051-100/Problem079/p079_keylog.txt");
 
   sortAndRemoveDuplicates(keys);
+
+  StrNum passcode = keys.front(); // see #5 below
+
+  for (auto key_it = keys.cbegin(); key_it != keys.cend(); ++key_it)
+    validateNewKey(keys.cbegin(), key_it, passcode);
 
   std::cout << "Passcode is " << passcode;
 }
@@ -91,6 +98,22 @@ bool rangeOfKeysValid(const StrNum &passcode,
   return all_keys_valid;
 }
 
+void validateNewKey(const std::vector<StrNum>::const_iterator &first_key,
+                    const std::vector<StrNum>::const_iterator &last_key,
+                    StrNum &passcode) {
+  if (not containsKey(*last_key, passcode)) {
+    bool key_validated = false;
+    if (containsUnorderedKey(*last_key, passcode)) {
+      // TODO: attempt to rearrange passcode
+      key_validated = rangeOfKeysValid(passcode, first_key, last_key);
+    }
+    if (not key_validated) {
+      // TODO: insert key digits into passcode
+    }
+  }
+  // else, passcode already valid for new key
+}
+
 /* First thoughts
  * 1. This problem requires storing and updating the passcode as we look at each
  * new key. The passcode must be valid for every key in the file. This means
@@ -100,4 +123,13 @@ bool rangeOfKeysValid(const StrNum &passcode,
  * 2. This problem  becomes easier to analyze if we sort the keys and remove any
  * duplicates.
  * 3. If the entire sequence is not found within the passcode, we can just add
- * those digits to the end of the passcode. */
+ * those digits to the end of the passcode.
+ * 4. For every new key that we validate, we are modifying the passcode. In
+ * doing so, we must make sure that all previously validated keys will still be
+ * valid after this modification.
+ * 5. We initialize the passcode with the first key, otherwise it would be
+ * initialized with 0 due to StrNum's default ctor. The digit 0 will be added
+ * eventually but, for now, we initialize with first key to aid in debugging.
+ * 6. When modifying the passcode, there are two options: reorganization or
+ * insertion. Reorganization should be attempted first, as the goal is to have
+ * the shortest possible passcode and, thus, least amount of insertions. */
