@@ -98,14 +98,22 @@ bool rangeOfKeysValid(const StrNum &passcode,
   return all_keys_valid;
 }
 
+StrNum rearrangePasscode(const std::vector<StrNum>::const_iterator &first_key,
+                         const std::vector<StrNum>::const_iterator &last_key,
+                         StrNum passcode) {
+  auto &invalid_key = *last_key;
+  // TODO: implement using linked-list
+  return passcode;
+}
+
 void validateNewKey(const std::vector<StrNum>::const_iterator &first_key,
                     const std::vector<StrNum>::const_iterator &last_key,
                     StrNum &passcode) {
   if (not containsKey(*last_key, passcode)) {
     bool key_validated = false;
     if (containsUnorderedKey(*last_key, passcode)) {
-      // TODO: attempt to rearrange passcode
-      key_validated = rangeOfKeysValid(passcode, first_key, last_key);
+      auto new_passcode = rearrangePasscode(first_key, last_key, passcode);
+      key_validated = rangeOfKeysValid(new_passcode, first_key, last_key);
     }
     if (not key_validated) {
       // TODO: insert key digits into passcode
@@ -132,4 +140,10 @@ void validateNewKey(const std::vector<StrNum>::const_iterator &first_key,
  * eventually but, for now, we initialize with first key to aid in debugging.
  * 6. When modifying the passcode, there are two options: reorganization or
  * insertion. Reorganization should be attempted first, as the goal is to have
- * the shortest possible passcode and, thus, least amount of insertions. */
+ * the shortest possible passcode and, thus, least amount of insertions.
+ * 7. Reorganizing the passcode digits is required when the passcode contains
+ * the digits needed for a given key, but in the wrong order. Reorganization
+ * fails if the resulting passcode is not valid for all previous keys as well.
+ * 8. Reorganizing the passcode digits can be made easier by using a linked list
+ * to store the individual digits of the passcode, as well as pointers to
+ * proceeding digits that together form part of a validated key. */
