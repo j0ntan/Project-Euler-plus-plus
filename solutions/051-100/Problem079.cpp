@@ -49,6 +49,8 @@ public:
   }
   bool operator==(const Key &rhs) const { return this->digits == rhs.digits; }
   bool operator<(const Key &rhs) const { return this->digits < rhs.digits; }
+  Sequence::const_iterator begin() const { return digits.begin(); }
+  Sequence::const_iterator end() const { return digits.end(); }
   Sequence::const_iterator cbegin() const { return digits.cbegin(); }
   Sequence::const_iterator cend() const { return digits.cend(); }
 
@@ -60,6 +62,8 @@ class Keys : public std::vector<Key> {};
 
 class Passcode {
 public:
+  typedef std::pair<unsigned, Sequence> Valid_Digit_t;
+
   explicit Passcode(const Key &key) {
     auto current_digit_it = key.cbegin();
     auto next_digit_it = current_digit_it;
@@ -71,8 +75,39 @@ public:
     digits.emplace_back(std::make_pair(*current_digit_it, Sequence{}));
   }
 
+  bool containsKey(const Key &key) const {
+    auto last_found_digit_it = digits.cbegin();
+    for (const auto &digit : key)
+      last_found_digit_it = std::find_if(
+          last_found_digit_it, digits.cend(),
+          [&](const Valid_Digit_t &vd) { return vd.first == digit; });
+    return last_found_digit_it != digits.cend();
+  }
+  bool containsUnorderedKey(const Key &key) const {
+    bool all_digits_found = true;
+    for (const auto &digit : key) {
+      const auto digit_location_it = std::find_if(
+          digits.cbegin(), digits.cend(),
+          [&](const Valid_Digit_t &vd) { return vd.first == digit; });
+      if (digit_location_it == digits.cend())
+        all_digits_found = false;
+    }
+    return all_digits_found;
+  }
+  bool rangeOfKeysValid(const Keys::const_iterator &first_key_it,
+                        const Keys::const_iterator &last_key_it) {
+    auto this_key_it = first_key_it;
+    bool all_keys_valid = true;
+    if (first_key_it != last_key_it)
+      while (all_keys_valid and this_key_it != last_key_it + 1)
+        all_keys_valid = containsKey(*this_key_it++);
+    else
+      all_keys_valid = false;
+    return all_keys_valid;
+  }
+
 private:
-  std::list<std::pair<unsigned, Sequence>> digits;
+  std::list<Valid_Digit_t> digits;
 };
 
 // function prototypes
@@ -127,40 +162,6 @@ void sortAndRemoveDuplicates(Keys &keys) {
 }
 
 /*
-bool containsKey(const StrNum &key, const StrNum &passcode) {
-  const auto first_location =
-      std::find(passcode.cbegin(), passcode.cend(), key[0]);
-  const auto second_location =
-      std::find(first_location, passcode.cend(), key[1]);
-  const auto third_location =
-      std::find(second_location, passcode.cend(), key[2]);
-  return first_location != passcode.cend() and
-         second_location != passcode.cend() and
-         third_location != passcode.cend();
-}
-
-bool containsUnorderedKey(const StrNum &missing_key, const StrNum &passcode) {
-  const bool found_first = std::find(passcode.cbegin(), passcode.cend(),
-                                     missing_key[0]) != passcode.cend();
-  const bool found_second = std::find(passcode.cbegin(), passcode.cend(),
-                                      missing_key[1]) != passcode.cend();
-  const bool found_third = std::find(passcode.cbegin(), passcode.cend(),
-                                     missing_key[2]) != passcode.cend();
-  return found_first and found_second and found_third;
-}
-
-bool rangeOfKeysValid(const StrNum &passcode,
-                      const std::vector<StrNum>::const_iterator &first_key_it,
-                      const std::vector<StrNum>::const_iterator &last_key_it) {
-  auto this_key_it = first_key_it;
-  bool all_keys_valid = true;
-  while (all_keys_valid and this_key_it != last_key_it + 1) {
-    all_keys_valid = containsKey(*this_key_it, passcode);
-    ++this_key_it;
-  }
-  return all_keys_valid;
-}
-
 StrNum rearrangePasscode(const std::vector<StrNum>::const_iterator &first_key,
                          const std::vector<StrNum>::const_iterator &last_key,
                          StrNum passcode) {
