@@ -10,20 +10,72 @@
  * file so as to determine the shortest possible secret passcode of unknown
  * length. */
 
-#include "../../utils/StrNum/StrNum.h"
 #include <algorithm>
+#include <cstdlib>
 #include <fstream>
+#include <initializer_list>
 #include <iostream>
+#include <list>
+#include <string>
 #include <vector>
 
+class Sequence : public std::list<unsigned> {
+public:
+  Sequence() = default;
+  Sequence(const std::initializer_list<unsigned> &il) : list<unsigned>(il) {}
+};
+
+class Key {
+public:
+  explicit Key(const std::string &key_str) {
+    if (key_str.length() == 3 && std::isdigit(key_str[0]) != 0 &&
+        std::isdigit(key_str[1]) != 0 && std::isdigit(key_str[2]) != 0) {
+      digits.emplace_back(key_str[0] - '0');
+      digits.emplace_back(key_str[1] - '0');
+      digits.emplace_back(key_str[2] - '0');
+    } else {
+      std::cerr << "Could not construct a key out of the string: " << key_str
+                << std::endl;
+      exit(1);
+    }
+  }
+  Sequence::const_iterator cbegin() const { return digits.cbegin(); }
+  Sequence::const_iterator cend() const { return digits.cend(); }
+
+private:
+  Sequence digits;
+};
+
+class Keys : public std::vector<Key> {};
+
+class Passcode {
+public:
+  explicit Passcode(const Key &key) {
+    auto current_digit_it = key.cbegin();
+    auto next_digit_it = current_digit_it;
+    ++next_digit_it;
+    digits.emplace_back(
+        std::make_pair(*current_digit_it++, Sequence{*next_digit_it++}));
+    digits.emplace_back(
+        std::make_pair(*current_digit_it++, Sequence{*next_digit_it++}));
+    digits.emplace_back(std::make_pair(*current_digit_it, Sequence{}));
+  }
+
+private:
+  std::list<std::pair<unsigned, Sequence>> digits;
+};
+
+/*
 // function prototypes
 std::vector<StrNum> readKeylog(const char *filename);
 void sortAndRemoveDuplicates(std::vector<StrNum> &keys);
 void validateNewKey(const std::vector<StrNum>::const_iterator &first_key,
                     const std::vector<StrNum>::const_iterator &last_key,
                     StrNum &passcode);
+*/
 
 int main() {
+  /*
   auto keys =
       readKeylog("../../../solutions/051-100/Problem079/p079_keylog.txt");
 
@@ -35,8 +87,10 @@ int main() {
     validateNewKey(keys.cbegin(), key_it, passcode);
 
   std::cout << "Passcode is " << passcode;
+  */
 }
 
+/*
 std::vector<StrNum> readKeylog(const char *filename) {
   std::ifstream file(filename);
   if (file.fail()) {
@@ -121,6 +175,7 @@ void validateNewKey(const std::vector<StrNum>::const_iterator &first_key,
   }
   // else, passcode already valid for new key
 }
+*/
 
 /* First thoughts
  * 1. This problem requires storing and updating the passcode as we look at each
