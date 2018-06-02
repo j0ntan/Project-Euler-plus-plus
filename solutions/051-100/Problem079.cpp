@@ -105,19 +105,39 @@ public:
       all_keys_valid = false;
     return all_keys_valid;
   }
+  void validateNewKey(const Keys::const_iterator &first_key_it,
+                      const Keys::const_iterator &last_key_it) {
+    const auto &new_key = *last_key_it;
+    if (not containsKey(new_key)) {
+      bool key_validated = false;
+      if (containsUnorderedKey(new_key)) {
+        // TODO: implement passcode rearrangement
+        /*
+        auto new_passcode = rearrangePasscode(first_key_it, last_key_it);
+        key_validated =
+            new_passcode.rangeOfKeysValid(first_key_it, last_key_it);
+        */
+      }
+      if (not key_validated) {
+        // TODO: insert key digits into passcode
+      }
+    }
+    // else, passcode already valid for new key
+  }
+
+  friend std::ostream &operator<<(std::ostream &out, const Passcode &passcode);
 
 private:
   std::list<Valid_Digit_t> digits;
 };
+std::ostream &operator<<(std::ostream &out, const Passcode &passcode) {
+  for (const auto &valid_digit : passcode.digits)
+    out << valid_digit.first;
+}
 
 // function prototypes
 Keys readKeylog(const char *filename);
 void sortAndRemoveDuplicates(Keys &keys);
-/*
-void validateNewKey(const std::vector<StrNum>::const_iterator &first_key,
-                    const std::vector<StrNum>::const_iterator &last_key,
-                    StrNum &passcode);
-*/
 
 int main() {
   auto keys =
@@ -125,14 +145,12 @@ int main() {
 
   sortAndRemoveDuplicates(keys);
 
-  /*
-  StrNum passcode = keys.front(); // see #5 below
+  Passcode passcode(keys.front());
 
   for (auto key_it = keys.cbegin(); key_it != keys.cend(); ++key_it)
-    validateNewKey(keys.cbegin(), key_it, passcode);
+    passcode.validateNewKey(keys.cbegin(), key_it);
 
   std::cout << "Passcode is " << passcode;
-  */
 }
 
 Keys readKeylog(const char *filename) {
@@ -168,22 +186,6 @@ StrNum rearrangePasscode(const std::vector<StrNum>::const_iterator &first_key,
   auto &invalid_key = *last_key;
   // TODO: implement using linked-list
   return passcode;
-}
-
-void validateNewKey(const std::vector<StrNum>::const_iterator &first_key,
-                    const std::vector<StrNum>::const_iterator &last_key,
-                    StrNum &passcode) {
-  if (not containsKey(*last_key, passcode)) {
-    bool key_validated = false;
-    if (containsUnorderedKey(*last_key, passcode)) {
-      auto new_passcode = rearrangePasscode(first_key, last_key, passcode);
-      key_validated = rangeOfKeysValid(new_passcode, first_key, last_key);
-    }
-    if (not key_validated) {
-      // TODO: insert key digits into passcode
-    }
-  }
-  // else, passcode already valid for new key
 }
 */
 
