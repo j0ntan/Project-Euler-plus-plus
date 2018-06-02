@@ -23,6 +23,14 @@ class Sequence : public std::list<unsigned> {
 public:
   Sequence() = default;
   Sequence(const std::initializer_list<unsigned> &il) : list<unsigned>(il) {}
+  bool operator==(const Sequence &rhs) const {
+    return static_cast<std::list<unsigned>>(*this) ==
+           static_cast<std::list<unsigned>>(rhs);
+  }
+  bool operator<(const Sequence &rhs) const {
+    return static_cast<std::list<unsigned>>(*this) <
+           static_cast<std::list<unsigned>>(rhs);
+  }
 };
 
 class Key {
@@ -39,6 +47,8 @@ public:
       exit(1);
     }
   }
+  bool operator==(const Key &rhs) const { return this->digits == rhs.digits; }
+  bool operator<(const Key &rhs) const { return this->digits < rhs.digits; }
   Sequence::const_iterator cbegin() const { return digits.cbegin(); }
   Sequence::const_iterator cend() const { return digits.cend(); }
 
@@ -65,22 +75,22 @@ private:
   std::list<std::pair<unsigned, Sequence>> digits;
 };
 
-/*
 // function prototypes
-std::vector<StrNum> readKeylog(const char *filename);
-void sortAndRemoveDuplicates(std::vector<StrNum> &keys);
+Keys readKeylog(const char *filename);
+void sortAndRemoveDuplicates(Keys &keys);
+/*
 void validateNewKey(const std::vector<StrNum>::const_iterator &first_key,
                     const std::vector<StrNum>::const_iterator &last_key,
                     StrNum &passcode);
 */
 
 int main() {
-  /*
   auto keys =
       readKeylog("../../../solutions/051-100/Problem079/p079_keylog.txt");
 
   sortAndRemoveDuplicates(keys);
 
+  /*
   StrNum passcode = keys.front(); // see #5 below
 
   for (auto key_it = keys.cbegin(); key_it != keys.cend(); ++key_it)
@@ -90,34 +100,33 @@ int main() {
   */
 }
 
-/*
-std::vector<StrNum> readKeylog(const char *filename) {
+Keys readKeylog(const char *filename) {
   std::ifstream file(filename);
   if (file.fail()) {
     std::cerr << "Failed to open the file" << std::endl;
     exit(1);
   }
 
-  StrNum line;
-  std::vector<StrNum> keys;
+  Keys keys;
   keys.reserve(50);
 
-  while (file.good()) {
-    std::getline(file, line);
-    keys.push_back(line);
+  const unsigned LOGIN_COUNT = 50;
+  for (unsigned login = 0; login < LOGIN_COUNT; ++login) {
+    std::string key_str;
+    std::getline(file, key_str);
+    keys.emplace_back(Key(key_str));
   }
-
-  keys.pop_back(); // remove empty string that was stored from EOF
 
   return keys;
 }
 
-void sortAndRemoveDuplicates(std::vector<StrNum> &keys) {
+void sortAndRemoveDuplicates(Keys &keys) {
   std::sort(keys.begin(), keys.end());
   auto new_end = std::unique(keys.begin(), keys.end());
   keys.erase(new_end, keys.end());
 }
 
+/*
 bool containsKey(const StrNum &key, const StrNum &passcode) {
   const auto first_location =
       std::find(passcode.cbegin(), passcode.cend(), key[0]);
