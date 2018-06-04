@@ -213,4 +213,8 @@ StrNum rearrangePasscode(const std::vector<StrNum>::const_iterator &first_key,
  * fails if the resulting passcode is not valid for all previous keys as well.
  * 8. Reorganizing the passcode digits can be made easier by using a linked list
  * to store the individual digits of the passcode, as well as pointers to
- * proceeding digits that together form part of a validated key. */
+ * proceeding digits that together form part of a validated key.
+ * 9. Inserting a digit into the passcode is required when reorganization fails
+ * or isn't an option. If other digits in that key are already in the passcode,
+ * the insertion point should be such that it will complete the missing key
+ * sequence. */
