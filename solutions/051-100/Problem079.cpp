@@ -105,6 +105,23 @@ public:
       all_keys_valid = false;
     return all_keys_valid;
   }
+  void insertKeyDigits(const Key &missing_key) {
+    auto last_found_it = digits.begin();
+    for (auto digit_it = missing_key.cbegin(); digit_it != missing_key.cend();
+         ++digit_it) {
+      auto found_current_digit_it = std::find_if(
+          last_found_it, digits.end(),
+          [&](const Valid_Digit_t &vd) { return vd.first == *digit_it; });
+      if (found_current_digit_it == digits.end()) {
+        if (digit_it == missing_key.cbegin())
+          digits.insert(last_found_it, std::make_pair(*digit_it, Sequence()));
+        else
+          digits.insert(++last_found_it, std::make_pair(*digit_it, Sequence()));
+        --last_found_it;
+      } else
+        last_found_it = found_current_digit_it;
+    }
+  }
   void validateNewKey(const Keys::const_iterator &first_key_it,
                       const Keys::const_iterator &last_key_it) {
     const auto &new_key = *last_key_it;
@@ -119,7 +136,7 @@ public:
         */
       }
       if (not key_validated) {
-        // TODO: insert key digits into passcode
+        insertKeyDigits(new_key);
       }
     }
     // else, passcode already valid for new key
