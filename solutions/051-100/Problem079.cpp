@@ -62,33 +62,23 @@ class Keys : public std::vector<Key> {};
 
 class Passcode {
 public:
-  typedef std::pair<unsigned, Sequence> Valid_Digit_t;
-
   explicit Passcode(const Key &key) {
-    auto current_digit_it = key.cbegin();
-    auto next_digit_it = current_digit_it;
-    ++next_digit_it;
-    digits.emplace_back(
-        std::make_pair(*current_digit_it++, Sequence{*next_digit_it++}));
-    digits.emplace_back(
-        std::make_pair(*current_digit_it++, Sequence{*next_digit_it++}));
-    digits.emplace_back(std::make_pair(*current_digit_it, Sequence{}));
+    for (const auto &digit : key)
+      digits.emplace_back(digit);
   }
 
   bool containsKey(const Key &key) const {
     auto last_found_digit_it = digits.cbegin();
     for (const auto &digit : key)
-      last_found_digit_it = std::find_if(
-          last_found_digit_it, digits.cend(),
-          [&](const Valid_Digit_t &vd) { return vd.first == digit; });
+      last_found_digit_it =
+          std::find(last_found_digit_it, digits.cend(), digit);
     return last_found_digit_it != digits.cend();
   }
   bool containsUnorderedKey(const Key &key) const {
     bool all_digits_found = true;
     for (const auto &digit : key) {
-      const auto digit_location_it = std::find_if(
-          digits.cbegin(), digits.cend(),
-          [&](const Valid_Digit_t &vd) { return vd.first == digit; });
+      const auto digit_location_it =
+          std::find(digits.cbegin(), digits.cend(), digit);
       if (digit_location_it == digits.cend())
         all_digits_found = false;
     }
@@ -96,16 +86,14 @@ public:
   }
   void insertKeyDigits(const Key &missing_key) {
     auto last_found_it = digits.begin();
-    for (auto digit_it = missing_key.cbegin(); digit_it != missing_key.cend();
-         ++digit_it) {
-      auto found_current_digit_it = std::find_if(
-          last_found_it, digits.end(),
-          [&](const Valid_Digit_t &vd) { return vd.first == *digit_it; });
+    for (const auto &digit : missing_key) {
+      auto found_current_digit_it =
+          std::find(last_found_it, digits.end(), digit);
       if (found_current_digit_it == digits.end()) {
-        if (digit_it == missing_key.cbegin())
-          digits.insert(last_found_it, std::make_pair(*digit_it, Sequence()));
+        if (digit == *missing_key.cbegin())
+          digits.insert(last_found_it, digit);
         else
-          digits.insert(++last_found_it, std::make_pair(*digit_it, Sequence()));
+          digits.insert(++last_found_it, digit);
         --last_found_it;
       } else
         last_found_it = found_current_digit_it;
@@ -126,11 +114,12 @@ public:
 
 private:
   void rearrangePasscode(const Key &key) {}
-  std::list<Valid_Digit_t> digits;
+  Sequence digits;
 };
 std::ostream &operator<<(std::ostream &out, const Passcode &passcode) {
-  for (const auto &valid_digit : passcode.digits)
-    out << valid_digit.first;
+  for (const auto &digit : passcode.digits)
+    out << digit;
+  return out;
 }
 
 // function prototypes
