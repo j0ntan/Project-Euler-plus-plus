@@ -128,12 +128,8 @@ public:
     if (not containsKey(new_key)) {
       bool key_validated = false;
       if (containsUnorderedKey(new_key)) {
-        // TODO: implement passcode rearrangement
-        /*
-        auto new_passcode = rearrangePasscode(first_key_it, last_key_it);
-        key_validated =
-            new_passcode.rangeOfKeysValid(first_key_it, last_key_it);
-        */
+        rearrangePasscode(*last_key_it);
+        key_validated = rangeOfKeysValid(first_key_it, last_key_it);
       }
       if (not key_validated) {
         insertKeyDigits(new_key);
@@ -160,6 +156,7 @@ private:
         linked_digits.push_back(*digit_it);
     }
   }
+  void rearrangePasscode(const Key &key) {}
   std::list<Valid_Digit_t> digits;
 };
 std::ostream &operator<<(std::ostream &out, const Passcode &passcode) {
@@ -210,16 +207,6 @@ void sortAndRemoveDuplicates(Keys &keys) {
   auto new_end = std::unique(keys.begin(), keys.end());
   keys.erase(new_end, keys.end());
 }
-
-/*
-StrNum rearrangePasscode(const std::vector<StrNum>::const_iterator &first_key,
-                         const std::vector<StrNum>::const_iterator &last_key,
-                         StrNum passcode) {
-  auto &invalid_key = *last_key;
-  // TODO: implement using linked-list
-  return passcode;
-}
-*/
 
 /* First thoughts
  * 1. This problem requires storing and updating the passcode as we look at each
