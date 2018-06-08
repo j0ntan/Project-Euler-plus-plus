@@ -94,17 +94,6 @@ public:
     }
     return all_digits_found;
   }
-  bool rangeOfKeysValid(const Keys::const_iterator &first_key_it,
-                        const Keys::const_iterator &last_key_it) {
-    auto this_key_it = first_key_it;
-    bool all_keys_valid = true;
-    if (first_key_it != last_key_it)
-      while (all_keys_valid and this_key_it != last_key_it + 1)
-        all_keys_valid = containsKey(*this_key_it++);
-    else
-      all_keys_valid = false;
-    return all_keys_valid;
-  }
   void insertKeyDigits(const Key &missing_key) {
     auto last_found_it = digits.begin();
     for (auto digit_it = missing_key.cbegin(); digit_it != missing_key.cend();
@@ -125,37 +114,17 @@ public:
   void validateNewKey(const Keys::const_iterator &first_key_it,
                       const Keys::const_iterator &last_key_it) {
     const auto &new_key = *last_key_it;
-    if (not containsKey(new_key)) {
-      bool key_validated = false;
-      if (containsUnorderedKey(new_key)) {
+    if (not containsKey(new_key))
+      if (containsUnorderedKey(new_key))
         rearrangePasscode(*last_key_it);
-        key_validated = rangeOfKeysValid(first_key_it, last_key_it);
-      }
-      if (not key_validated) {
+      else
         insertKeyDigits(new_key);
-      }
-    }
     // else, passcode already valid for new key
-    linkKeyDigits(new_key);
   }
 
   friend std::ostream &operator<<(std::ostream &out, const Passcode &passcode);
 
 private:
-  void linkKeyDigits(const Key &key) {
-    auto found_iter = digits.begin();
-    for (auto digit_it = key.cbegin(); digit_it != --key.cend();) {
-      found_iter =
-          std::find_if(found_iter, digits.end(), [&](const Valid_Digit_t &vd) {
-            return vd.first == *digit_it;
-          });
-      auto &linked_digits = found_iter->second;
-      ++digit_it;
-      if (std::find(linked_digits.cbegin(), linked_digits.cend(), *digit_it) ==
-          linked_digits.end())
-        linked_digits.push_back(*digit_it);
-    }
-  }
   void rearrangePasscode(const Key &key) {}
   std::list<Valid_Digit_t> digits;
 };
@@ -236,4 +205,16 @@ void sortAndRemoveDuplicates(Keys &keys) {
  * 9. Inserting a digit into the passcode is required when reorganization fails
  * or isn't an option. If other digits in that key are already in the passcode,
  * the insertion point should be such that it will complete the missing key
- * sequence. */
+ * sequence.
+ * 10. After manually finding the answer and making observations, we can
+ * simplify the logic in validating a key and in rearranging the passcode.
+ * Rearrangement always resulted in a passcode that is validated for a given key
+ * and its preceding keys. Thus, it is only necessary to rearrange or to insert
+ * key digits, but never both for a given new key. Secondly, The rearrangement
+ * step involves moving digits towards the start of the passcode, never to the
+ * end. In addition, it was always safe to move a digit back to the position
+ * right before the passcode digit corresponding to the next key digit. For
+ * example, given a passcode of 157386 and a key of 358, it would be safe to
+ * move the 3 right before 5, resulting a passcode of 135786 that would still be
+ * valid for any previously validated keys. Thus, there's no need to link the
+ * digits within the passcode. */
