@@ -113,7 +113,32 @@ public:
   friend std::ostream &operator<<(std::ostream &out, const Passcode &passcode);
 
 private:
-  void rearrangePasscode(const Key &key) {}
+  void rearrangePasscode(const Key &key) {
+    auto key_digit_it = key.cbegin();
+    auto first_digit_position_it =
+        std::find(digits.cbegin(), digits.cend(), *key_digit_it++);
+    auto second_digit_position_it =
+            std::find(digits.cbegin(), digits.cend(), *key_digit_it++);
+    auto third_digit_position_it =
+            std::find(digits.cbegin(), digits.cend(), *key_digit_it);
+
+    const bool second_after_third =
+        std::find(third_digit_position_it, digits.cend(),
+                  *second_digit_position_it) != digits.cend();
+    if(second_after_third) {
+      digits.insert(third_digit_position_it, *second_digit_position_it);
+      digits.erase(second_digit_position_it);
+      second_digit_position_it = --third_digit_position_it;
+    }
+
+    const bool first_after_second =
+        std::find(second_digit_position_it, digits.cend(),
+                  *first_digit_position_it) != digits.cend();
+    if(first_after_second) {
+      digits.insert(second_digit_position_it, *first_digit_position_it);
+      digits.erase(first_digit_position_it);
+    }
+  }
   Sequence digits;
 };
 std::ostream &operator<<(std::ostream &out, const Passcode &passcode) {
