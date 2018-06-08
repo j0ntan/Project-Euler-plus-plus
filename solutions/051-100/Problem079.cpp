@@ -140,11 +140,26 @@ public:
       }
     }
     // else, passcode already valid for new key
+    linkKeyDigits(new_key);
   }
 
   friend std::ostream &operator<<(std::ostream &out, const Passcode &passcode);
 
 private:
+  void linkKeyDigits(const Key &key) {
+    auto found_iter = digits.begin();
+    for (auto digit_it = key.cbegin(); digit_it != --key.cend();) {
+      found_iter =
+          std::find_if(found_iter, digits.end(), [&](const Valid_Digit_t &vd) {
+            return vd.first == *digit_it;
+          });
+      auto &linked_digits = found_iter->second;
+      ++digit_it;
+      if (std::find(linked_digits.cbegin(), linked_digits.cend(), *digit_it) ==
+          linked_digits.end())
+        linked_digits.push_back(*digit_it);
+    }
+  }
   std::list<Valid_Digit_t> digits;
 };
 std::ostream &operator<<(std::ostream &out, const Passcode &passcode) {
