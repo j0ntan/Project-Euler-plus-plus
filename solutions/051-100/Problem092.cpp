@@ -20,19 +20,29 @@
 
 // function prototypes
 const StrNum sumOfSquaredDigits(const StrNum &num);
+bool reachedEndOfChain(const StrNum &chain_link);
+
+const unsigned LAST_STARTING_NUMBER = 10'000'000;
 
 int main() {
   unsigned targets_hit = 0;
 
-  for (unsigned starting_num = 1; starting_num < 10'000'000u; ++starting_num) {
+  for (unsigned starting_num = 1; starting_num < LAST_STARTING_NUMBER;
+       ++starting_num) {
     StrNum chain_link{starting_num};
-    while (chain_link != StrNum{1u} and chain_link != StrNum{89u})
+    while (not reachedEndOfChain(chain_link))
       chain_link = sumOfSquaredDigits(chain_link);
     if (chain_link == StrNum{89u})
       ++targets_hit;
   }
 
   std::cout << "Total of starting numbers that arrive at 89 is " << targets_hit;
+}
+
+bool reachedEndOfChain(const StrNum &chain_link) {
+  static const StrNum one{1u};
+  static const StrNum eighty_nine{89u};
+  return chain_link == one || chain_link == eighty_nine;
 }
 
 const std::vector<StrNum> eachDigitSquared(const StrNum &num) {
