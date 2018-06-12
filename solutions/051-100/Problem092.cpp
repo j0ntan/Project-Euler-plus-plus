@@ -32,13 +32,14 @@ int main() {
   endings[89] = ChainEnding::eighty_nine;
 
   for (unsigned starting_num = 1; starting_num < LAST_STARTING_NUMBER;
-       ++starting_num) {
-    StrNum chain_link{starting_num};
-    while (not reachedEndOfChain(chain_link))
-      chain_link = sumOfSquaredDigits(chain_link);
-    if (chain_link == StrNum{89u})
-      ++targets_hit;
-  }
+       ++starting_num)
+    if (endings[starting_num] == ChainEnding::unknown) {
+      StrNum chain_link{starting_num};
+      while (not reachedEndOfChain(chain_link))
+        chain_link = sumOfSquaredDigits(chain_link);
+      if (chain_link == StrNum{89u})
+        ++targets_hit;
+    }
 
   std::cout << "Total of starting numbers that arrive at 89 is " << targets_hit;
 }
