@@ -23,9 +23,13 @@ const StrNum sumOfSquaredDigits(const StrNum &num);
 bool reachedEndOfChain(const StrNum &chain_link);
 
 const unsigned LAST_STARTING_NUMBER = 10'000'000;
+enum class ChainEnding { unknown, one, eighty_nine };
 
 int main() {
   unsigned targets_hit = 0;
+  std::vector<ChainEnding> endings(LAST_STARTING_NUMBER, ChainEnding::unknown);
+  endings[1] = ChainEnding::one;
+  endings[89] = ChainEnding::eighty_nine;
 
   for (unsigned starting_num = 1; starting_num < LAST_STARTING_NUMBER;
        ++starting_num) {
