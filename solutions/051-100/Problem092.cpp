@@ -39,9 +39,11 @@ int main() {
       const auto permuted_indices = getLinkPermutations(chain);
 
       if (chain.back() == 89u)
-        endings[starting_num] = ChainEnding::eighty_nine;
+        for (const auto &index : permuted_indices)
+          endings[index] = ChainEnding::eighty_nine;
       else
-        endings[starting_num] = ChainEnding::one;
+        for (const auto &index : permuted_indices)
+          endings[index] = ChainEnding::one;
     }
 
   std::cout << "Total of starting numbers that arrive at 89 is "
