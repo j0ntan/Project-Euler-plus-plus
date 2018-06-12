@@ -21,6 +21,8 @@
 
 // function prototypes
 const std::vector<unsigned> createNumberChain(unsigned first_link);
+const std::vector<unsigned>
+getLinkPermutations(const std::vector<unsigned> &chain);
 
 const unsigned LAST_STARTING_NUMBER = 10'000'000;
 enum class ChainEnding { unknown, one, eighty_nine };
@@ -34,6 +36,8 @@ int main() {
        ++starting_num)
     if (endings[starting_num] == ChainEnding::unknown) {
       auto chain = createNumberChain(starting_num);
+      const auto permuted_indices = getLinkPermutations(chain);
+
       if (chain.back() == 89u)
         endings[starting_num] = ChainEnding::eighty_nine;
       else
@@ -69,6 +73,18 @@ const std::vector<unsigned> createNumberChain(unsigned first_link) {
   while (not reachedEndOfChain(chain.back()))
     chain.emplace_back(sumOfSquaredDigits(chain.back()));
   return chain;
+}
+
+const std::vector<unsigned>
+getLinkPermutations(const std::vector<unsigned> &chain) {
+  std::vector<unsigned> permutations;
+  for (const auto &num : chain) {
+    auto digits = projEuler::getDigits(num);
+    do {
+      permutations.emplace_back(projEuler::combineDigits(digits));
+    } while (std::next_permutation(digits.begin(), digits.end()));
+  }
+  return permutations;
 }
 
 /* First thoughts
