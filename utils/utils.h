@@ -13,6 +13,7 @@ bool isPalindrome(const std::string &str) {
 
   return palindrome;
 }
+bool isPalindrome(unsigned num) { return isPalindrome(std::to_string(num)); }
 
 bool isPrime(unsigned num) {
   if (num == 1)
@@ -66,28 +67,31 @@ std::vector<unsigned> getFirstNPrimesList(unsigned num) {
   return primesList;
 }
 
-template <typename T> std::vector<T> getDigits(T num) {
-  std::vector<T> digits;
+template <typename Numeric_type>
+std::vector<Numeric_type> getDigits(Numeric_type num) {
+  std::vector<Numeric_type> digits;
   while (num > 0) {
     digits.push_back(num % 10);
     num /= 10;
   }
-  return std::vector<T>(digits.rbegin(), digits.rend());
+  return std::vector<Numeric_type>(digits.rbegin(), digits.rend());
 }
 
-template <typename T1, typename T2> std::vector<T2> getDigits(T1 num) {
-  std::vector<T2> digits;
+template <typename Numeric_type, typename Return_type>
+std::vector<Return_type> getDigits(Numeric_type num) {
+  std::vector<Return_type> digits;
   while (num > 0) {
-    digits.push_back(static_cast<T2>(num % 10));
+    digits.push_back(static_cast<Return_type>(num % 10));
     num /= 10;
   }
-  return std::vector<T2>(digits.rbegin(), digits.rend());
+  return std::vector<Return_type>(digits.rbegin(), digits.rend());
 }
 
-template <typename T> T combineDigits(const std::vector<T> &digits) {
-  T num = 0;
-  for (auto i = 0u; i < digits.size(); ++i)
-    num = 10 * num + digits[i];
+template <typename Numeric_type>
+Numeric_type combineDigits(const std::vector<Numeric_type> &digits) {
+  Numeric_type num{0};
+  for (const auto &digit : digits)
+    num = Numeric_type{10} * num + digit;
   return num;
 }
 
