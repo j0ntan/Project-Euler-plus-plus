@@ -13,14 +13,14 @@
  *
  * How many starting numbers below ten million will arrive at 89? */
 
-#include "../../utils/StrNum/StrNum.h"
+#include "../../utils/utils.h"
+#include <algorithm>
 #include <iostream>
 #include <numeric>
 #include <vector>
 
 // function prototypes
-const StrNum sumOfSquaredDigits(const StrNum &num);
-bool reachedEndOfChain(const StrNum &chain_link);
+const std::vector<unsigned> createNumberChain(unsigned first_link);
 
 const unsigned LAST_STARTING_NUMBER = 10'000'000;
 enum class ChainEnding { unknown, one, eighty_nine };
@@ -34,33 +34,38 @@ int main() {
   for (unsigned starting_num = 1; starting_num < LAST_STARTING_NUMBER;
        ++starting_num)
     if (endings[starting_num] == ChainEnding::unknown) {
-      StrNum chain_link{starting_num};
-      while (not reachedEndOfChain(chain_link))
-        chain_link = sumOfSquaredDigits(chain_link);
-      if (chain_link == StrNum{89u})
+      auto chain = createNumberChain(starting_num);
+      if (chain.back() == 89u)
         ++targets_hit;
     }
 
   std::cout << "Total of starting numbers that arrive at 89 is " << targets_hit;
 }
 
-bool reachedEndOfChain(const StrNum &chain_link) {
-  static const StrNum one{1u};
-  static const StrNum eighty_nine{89u};
+bool reachedEndOfChain(unsigned chain_link) {
+  static const unsigned one{1};
+  static const unsigned eighty_nine{89};
   return chain_link == one || chain_link == eighty_nine;
 }
 
-const std::vector<StrNum> eachDigitSquared(const StrNum &num) {
-  std::vector<StrNum> squared_digits(num.size(), StrNum(0u));
-  for (unsigned i = 0; i < num.size(); ++i)
-    squared_digits[i] = StrNum(num[i]) * StrNum(num[i]);
+const std::vector<unsigned> eachDigitSquared(unsigned num) {
+  std::vector<unsigned> squared_digits(projEuler::getDigits(num));
+  std::transform(squared_digits.begin(), squared_digits.end(),
+                 squared_digits.begin(),
+                 [](unsigned num) { return num * num; });
   return squared_digits;
 }
 
-const StrNum sumOfSquaredDigits(const StrNum &num) {
+const unsigned sumOfSquaredDigits(unsigned num) {
   const auto squared_digits = eachDigitSquared(num);
-  return std::accumulate(squared_digits.begin(), squared_digits.end(),
-                         StrNum{0u});
+  return std::accumulate(squared_digits.begin(), squared_digits.end(), 0u);
+}
+
+const std::vector<unsigned> createNumberChain(unsigned first_link) {
+  std::vector<unsigned> chain{first_link};
+  while (not reachedEndOfChain(chain.back()))
+    chain.emplace_back(sumOfSquaredDigits(chain.back()));
+  return chain;
 }
 
 /* First thoughts
@@ -72,4 +77,7 @@ const StrNum sumOfSquaredDigits(const StrNum &num) {
  * can observe that for a given number with more than one digit, the numbers
  * resulting from a permutation of those digits will have the same links in the
  * chain. Thus, the performance can be improved by skipping those permuted
- * numbers. */
+ * numbers.
+ * 4. Sticking with regular integers rather than string-based ones will be
+ * easier because the number formed by the permutations of those digits will be
+ * used as an index. Thus, we'll use a utility function instead. */
