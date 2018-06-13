@@ -10,16 +10,32 @@
 
 #include <iostream>
 
+// function prototypes
+const unsigned countBelowMinNthRow(unsigned row);
+
 int main() {
   unsigned counter = 0;
+
+  for (unsigned n = 23; n <= 100; ++n) {
+    const unsigned counted_below_minimum = countBelowMinNthRow(n);
+    const unsigned total_values = n + 1;
+    const unsigned nth_row_unique_values =
+        (total_values % 2 == 0) ? total_values / 2 : (total_values + 1) / 2;
+    counter += nth_row_unique_values - counted_below_minimum;
+  }
+
   std::cout << "Combinations greater than one-million equals " << counter;
+}
+
+const unsigned countBelowMinNthRow(unsigned row) {
+  return 0;
 }
 
 /* First thoughts
  * 1. For this problem, we can use the properties of Pascal's triangle, and its
  * relation to the value of a combination, to make some simplifications.
  * 2. A value of n corresponds to the nth row of the triangle, with the top
- * being row 1. The nth row will also have n numbers in that row.
+ * being row 0. The nth row will also have (n + 1) numbers in that row.
  * 3. The triangle is symmetrical and, for a given row, the numbers increase
  * from one until we reach the middle number of that row and then decreases back
  * to one.
