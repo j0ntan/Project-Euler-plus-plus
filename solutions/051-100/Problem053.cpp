@@ -8,6 +8,7 @@
  * How many, not necessarily distinct, values of nCr, for 1 <= n <= 100, are
  * greater than one-million? */
 
+#include "../../utils/utils.h"
 #include <iostream>
 
 // function prototypes
@@ -27,8 +28,24 @@ int main() {
   std::cout << "Combinations greater than one-million equals " << counter;
 }
 
+unsigned productNtoNminusK(unsigned n, unsigned k) {
+  const unsigned lower_bound = n - k;
+  unsigned product = 1;
+  while (n > lower_bound)
+    product *= n--;
+  return product;
+}
+
+unsigned combination(unsigned n, unsigned k) {
+  return productNtoNminusK(n, k) / projEuler::factorial(k);
+}
+
 const unsigned countBelowMinNthRow(unsigned row) {
-  return 0;
+  unsigned k = 0;
+  const unsigned MINIMUM = 1'000'000;
+  while (combination(row, k) <= MINIMUM)
+    ++k;
+  return k;
 }
 
 /* First thoughts
@@ -44,4 +61,17 @@ const unsigned countBelowMinNthRow(unsigned row) {
  * calculate & count the numbers less than one-million for an nth row. Thus, the
  * numbers greater than one-million is half the row count minus the calculated
  * count. This avoids having to calculate large combinations, e.g. 100C50, which
- * would overflow on all built-in types. This can be done for all possible n. */
+ * would overflow on all built-in types. This can be done for all possible n.
+ * 5. For calculating the combination of n choose k, we cannot simply follow the
+ * explicit formula, n!/(k! (n-k)!). Calculating n! will result in overflow for
+ * large values of n, but we can simplify n!/(n-k)!. For this calculation some
+ * terms cancel out, thus we only need to calculate n * (n-1) * ... * (n-k).
+ * 6. There is still overflow after the previous simplification, thus requiring
+ * another approach. An alternative method is to construct portions of the
+ * Pascal's triangle for combination values less than one-million. This
+ * completely avoids calculating large values than can overflow.
+ * 7. The values for the triangle can be calculated the easy way, using the
+ * values of the previous row. instead of using factorials.
+ * 8. Due to symmetry, the calculated values repeat on the same row. Therefore,
+ * for a given row, this calculated amount can be subtracted from the total
+ * amount of values possible on that row, as we did before. */
