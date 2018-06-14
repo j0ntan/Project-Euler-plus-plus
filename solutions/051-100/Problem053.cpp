@@ -8,44 +8,25 @@
  * How many, not necessarily distinct, values of nCr, for 1 <= n <= 100, are
  * greater than one-million? */
 
-#include "../../utils/utils.h"
 #include <iostream>
+#include <vector>
 
 // function prototypes
-const unsigned countBelowMinNthRow(unsigned row);
 
 int main() {
   unsigned counter = 0;
+  std::vector<unsigned> current_row{1}, next_row;
+
+  for (unsigned n = 0; n < 22; ++n) {
+    // TODO: calculate row of Pascal's triangle
+  }
 
   for (unsigned n = 23; n <= 100; ++n) {
-    const unsigned counted_below_minimum = countBelowMinNthRow(n);
-    const unsigned total_values = n + 1;
-    const unsigned nth_row_unique_values =
-        (total_values % 2 == 0) ? total_values / 2 : (total_values + 1) / 2;
-    counter += nth_row_unique_values - counted_below_minimum;
+    // TODO: calculate partial rows of Pascal's triangle & count values over
+    // one-million
   }
 
   std::cout << "Combinations greater than one-million equals " << counter;
-}
-
-unsigned productNtoNminusK(unsigned n, unsigned k) {
-  const unsigned lower_bound = n - k;
-  unsigned product = 1;
-  while (n > lower_bound)
-    product *= n--;
-  return product;
-}
-
-unsigned combination(unsigned n, unsigned k) {
-  return productNtoNminusK(n, k) / projEuler::factorial(k);
-}
-
-const unsigned countBelowMinNthRow(unsigned row) {
-  unsigned k = 0;
-  const unsigned MINIMUM = 1'000'000;
-  while (combination(row, k) <= MINIMUM)
-    ++k;
-  return k;
 }
 
 /* First thoughts
