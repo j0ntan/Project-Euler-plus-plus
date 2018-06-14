@@ -17,13 +17,10 @@ std::vector<unsigned> nextUniquePascals(std::vector<unsigned> row,
 
 int main() {
   unsigned counter = 0;
-  std::vector<unsigned> current_row{1};
-  bool even_row = true;
-
-  for (unsigned n = 1; n < 22; ++n) {
-    current_row = nextUniquePascals(current_row, even_row);
-    even_row = !even_row;
-  }
+  std::vector<unsigned> current_row{
+      1,      22,     231,    1540,   7315,  26334, 74613,
+      170544, 319770, 497420, 646646, 705432}; // unique combinations for n = 22
+  bool even_row = false;
 
   for (unsigned n = 23; n <= 100; ++n) {
     // TODO: calculate partial rows of Pascal's triangle & count values over
