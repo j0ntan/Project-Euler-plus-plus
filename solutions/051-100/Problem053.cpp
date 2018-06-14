@@ -12,13 +12,17 @@
 #include <vector>
 
 // function prototypes
+std::vector<unsigned> nextUniquePascals(std::vector<unsigned> row,
+                                        bool even_row);
 
 int main() {
   unsigned counter = 0;
-  std::vector<unsigned> current_row{1}, next_row;
+  std::vector<unsigned> current_row{1};
+  bool even_row = true;
 
-  for (unsigned n = 0; n < 22; ++n) {
-    // TODO: calculate row of Pascal's triangle
+  for (unsigned n = 1; n < 22; ++n) {
+    current_row = nextUniquePascals(current_row, even_row);
+    even_row = !even_row;
   }
 
   for (unsigned n = 23; n <= 100; ++n) {
@@ -27,6 +31,17 @@ int main() {
   }
 
   std::cout << "Combinations greater than one-million equals " << counter;
+}
+
+std::vector<unsigned> nextUniquePascals(std::vector<unsigned> row,
+                                        bool even_row) {
+  std::vector<unsigned> next_row;
+  next_row.emplace_back(1); // every row starts with one
+  for (unsigned i = 0; i < row.size() - 1; ++i)
+    next_row.emplace_back(row[i] + row[i + 1]);
+  if (even_row)
+    next_row.emplace_back(2 * row.back());
+  return next_row;
 }
 
 /* First thoughts
