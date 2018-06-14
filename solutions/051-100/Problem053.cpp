@@ -22,6 +22,9 @@ int main() {
 
   for (unsigned n = 23; n <= 100; ++n) {
     current_row = nextUniquePascals(current_row);
+    const unsigned total_combinations = n+1;
+    const unsigned combinations_under_one_million = 2 * current_row.size();
+    counter += total_combinations - combinations_under_one_million;
   }
 
   std::cout << "Combinations greater than one-million equals " << counter;
