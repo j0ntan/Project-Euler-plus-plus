@@ -12,32 +12,27 @@
 #include <vector>
 
 // function prototypes
-std::vector<unsigned> nextUniquePascals(std::vector<unsigned> row,
-                                        bool even_row);
+std::vector<unsigned> nextUniquePascals(std::vector<unsigned> row);
 
 int main() {
   unsigned counter = 0;
   std::vector<unsigned> current_row{
       1,      22,     231,    1540,   7315,  26334, 74613,
       170544, 319770, 497420, 646646, 705432}; // unique combinations for n = 22
-  bool even_row = false;
 
   for (unsigned n = 23; n <= 100; ++n) {
-    // TODO: calculate partial rows of Pascal's triangle & count values over
-    // one-million
+    current_row = nextUniquePascals(current_row);
   }
 
   std::cout << "Combinations greater than one-million equals " << counter;
 }
 
-std::vector<unsigned> nextUniquePascals(std::vector<unsigned> row,
-                                        bool even_row) {
+std::vector<unsigned> nextUniquePascals(std::vector<unsigned> row) {
   std::vector<unsigned> next_row;
   next_row.emplace_back(1); // every row starts with one
-  for (unsigned i = 0; i < row.size() - 1; ++i)
+  for (unsigned i = 0;
+       i < row.size() - 1 and (row[i] + row[i + 1] <= 1'000'000); ++i)
     next_row.emplace_back(row[i] + row[i + 1]);
-  if (even_row)
-    next_row.emplace_back(2 * row.back());
   return next_row;
 }
 
