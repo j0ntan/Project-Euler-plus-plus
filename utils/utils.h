@@ -116,6 +116,19 @@ unsigned getGCD(unsigned num1, unsigned num2) {
   return num1;
 }
 
+template <class Numeric_type>
+Numeric_type GCD(const Numeric_type &a, const Numeric_type &b) {
+  if (b == Numeric_type{0})
+    return a;
+  else
+    return GCD(b, a % b);
+}
+
+template <class Numeric_type>
+Numeric_type LCM(const Numeric_type &num1, const Numeric_type &num2) {
+  return num1 * num2 / GCD(num1, num2);
+}
+
 namespace debug {
 template <typename T> void printLastN(const std::vector<T> &vec, unsigned N) {
   std::cout << "Last " << N << " values are: " << std::endl;
