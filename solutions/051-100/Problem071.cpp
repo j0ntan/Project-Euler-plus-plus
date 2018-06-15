@@ -14,14 +14,31 @@
  * ascending order of size, find the numerator of the fraction immediately to
  * the left of 3/7. */
 
+#include <cmath>
 #include <iostream>
 
 // function prototypes
+const unsigned setNumeratorBound(unsigned denominator);
 
 int main() {
   unsigned target_numerator = 0;
+
+  const unsigned DENOMINATOR_MAX = 1'000'000;
+  for (unsigned current_denom = 2; current_denom <= DENOMINATOR_MAX;
+       ++current_denom) {
+    auto corresponding_numer_max = setNumeratorBound(current_denom);
+    for (unsigned current_numer = 1; current_numer <= corresponding_numer_max;
+         ++current_numer) {
+      // TODO: record unique reduced fractions
+    }
+  }
+
   std::cout << "The numerator of the fraction to the left of 3/7 is "
             << target_numerator;
+}
+
+const unsigned setNumeratorBound(unsigned denominator) {
+  return static_cast<unsigned>(floor(3 * static_cast<double>(denominator) / 7));
 }
 
 /* First thoughts
@@ -34,4 +51,10 @@ int main() {
  * numerator, n, such that 3/7 >= x/n. Since n is always positive, this gives
  * x <= 3n/7, or x = floor(3n/7).
  * 3. Before we store a given fraction, it must be converted to its simplest
- * form. */
+ * form.
+ * 4. Even after setting an upper bound for each denominator, there are too many
+ * iterations to complete. The problem can be further simplified by only looking
+ * at the fractions in the neighborhood of 3/7.
+ * 5. Just as before, we want x = floor(3n/7) for a given denominator, n. If x/n
+ * is a multiple of 3/7, we can take x-1 instead. Thus, we can look for the
+ * minimum of 3/7 - x/n for n <= one-million. */
