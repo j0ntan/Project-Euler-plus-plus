@@ -18,18 +18,22 @@
 #include <iostream>
 
 // function prototypes
-const unsigned setNumeratorBound(unsigned denominator);
+const unsigned findNearestNumerator(unsigned denominator);
+const double distanceFromTarget(unsigned numerator, unsigned denominator);
 
 int main() {
   unsigned target_numerator = 0;
+  double min_distance = 3.0 / 7.0;
 
   const unsigned DENOMINATOR_MAX = 1'000'000;
-  for (unsigned current_denom = 2; current_denom <= DENOMINATOR_MAX;
+  for (unsigned current_denom = 3; current_denom <= DENOMINATOR_MAX;
        ++current_denom) {
-    auto corresponding_numer_max = setNumeratorBound(current_denom);
-    for (unsigned current_numer = 1; current_numer <= corresponding_numer_max;
-         ++current_numer) {
-      // TODO: record unique reduced fractions
+    const auto corresponding_numer = findNearestNumerator(current_denom);
+    const auto current_distance =
+        distanceFromTarget(corresponding_numer, current_denom);
+    if (current_distance < min_distance) {
+      min_distance = current_distance;
+      target_numerator = corresponding_numer;
     }
   }
 
@@ -37,8 +41,17 @@ int main() {
             << target_numerator;
 }
 
-const unsigned setNumeratorBound(unsigned denominator) {
-  return static_cast<unsigned>(floor(3 * static_cast<double>(denominator) / 7));
+const unsigned findNearestNumerator(unsigned denominator) {
+  auto numerator =
+      static_cast<unsigned>(floor(3 * static_cast<double>(denominator) / 7));
+  if (numerator % 3 == 0 and denominator % 7 == 0)
+    --numerator;
+  return numerator;
+}
+
+const double distanceFromTarget(unsigned numerator, unsigned denominator) {
+  return 3.0 / 7.0 -
+         static_cast<double>(numerator) / static_cast<double>(denominator);
 }
 
 /* First thoughts
