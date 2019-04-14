@@ -29,4 +29,13 @@ int main() {
  * index i and j. Because we want to replace two numbers, i and j must differ.
  * For a chosen set of i and j, swapping their values will result in a duplicate
  * replacement. Thus, we always want i < j.
+ * 3. Rather than iterating a number range, it is better to start with i and j,
+ * followed by appending/filling in digits to form a set of numbers with the
+ * chosen i and j. For example, let i and j be 0 and 1, respectively. The set of
+ * two digit numbers (10-99) is covered by i and j. Next we add a third digit,
+ * starting with appending 0. This covers the set of **0 numbers (i.e., 100,
+ * 110, 120, ..., 990). We continue checking **1, **2, ..., **9. Then we add
+ * another digit to get **00, followed by **01, **02, etc. We can stop (for now)
+ * once we have reached 56**3, or when i = 2 and j = 3 and 5,6,3 fills in the
+ * 5-digit number.
  * */
