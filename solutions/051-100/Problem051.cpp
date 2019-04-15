@@ -32,68 +32,30 @@ int main() {
 
 bool hasMinimumPrimes(const std::vector<unsigned int> &possiblePrimes) {
   const unsigned int MINIMUM_PRIMES = 8;
+  const unsigned int MAXIMUM_COMPOSITES =
+      possiblePrimes.size() - MINIMUM_PRIMES;
 
-  // The first number in the list may have a different number of digits than the
-  // rest. So we check this first and decide whether or not to exclude this
-  // value in our check for minimum primes.
-  unsigned int i = 0;
-  if (std::to_string(possiblePrimes[0]).length() !=
-      std::to_string(possiblePrimes[1]).length()) {
-    ++i;
-  }
-
-  const unsigned int MAXIMUM_COMPOSITES = 10 - i - MINIMUM_PRIMES;
   unsigned int num_of_composite = 0;
-  for (; i < possiblePrimes.size() && num_of_composite <= MAXIMUM_COMPOSITES;
+  for (unsigned int i = 0;
+       i < possiblePrimes.size() && num_of_composite <= MAXIMUM_COMPOSITES;
        ++i) {
     if (!projEuler::isPrime(possiblePrimes[i]))
       ++num_of_composite;
   }
+
   return num_of_composite <= MAXIMUM_COMPOSITES;
 }
 
-std::vector<unsigned int>
-generatePossiblePrimes(unsigned int i, unsigned int j, unsigned int filler,
-                       unsigned int additional_digits) {
+std::vector<unsigned int> generatePossiblePrimes(unsigned int i, unsigned int j,
+                                                 unsigned int base) {
   std::vector<unsigned int> retval;
   retval.reserve(10);
+  std::string base_str = std::to_string(base);
 
-  // observe which digits need to be filled in
-  const unsigned int LEADING_DIGIT_VACANCIES = i;
-  const unsigned int IN_BETWEEN_DIGIT_VACANCIES = j - i - 1;
-  const unsigned int TRAILING_DIGIT_VACANCIES = additional_digits;
-
-  const unsigned int TOTAL_DIGITS = (j + 1) + TRAILING_DIGIT_VACANCIES;
-  const unsigned int TOTAL_VACANCIES = TOTAL_DIGITS - 2;
-
-  // construct appropriate filler string with leading zeros (i.e. "001" vs "1")
-  std::string filler_str = std::to_string(filler);
-  if (TOTAL_VACANCIES)
-    filler_str =
-        std::string(TOTAL_VACANCIES - filler_str.size(), '0') + filler_str;
-
-  // form base str, e.g. 56**3 has filler = 563
-  std::string base(TOTAL_DIGITS, '*');
-
-  // keep track of which digits are used to fill in vacancies
-  unsigned int filler_idx = 0;
-
-  // fill in digits, conditionally
-  if (LEADING_DIGIT_VACANCIES)
-    for (unsigned int k = 0; k < LEADING_DIGIT_VACANCIES; ++k)
-      base[k] = filler_str[filler_idx++];
-  if (IN_BETWEEN_DIGIT_VACANCIES)
-    for (unsigned int k = 0; k < IN_BETWEEN_DIGIT_VACANCIES; ++k)
-      base[(i + 1) + k] = filler_str[filler_idx++];
-  if (TRAILING_DIGIT_VACANCIES)
-    for (unsigned int k = 0; k < TRAILING_DIGIT_VACANCIES; ++k)
-      base[(j + 1) + k] = filler_str[filler_idx++];
-
-  // add replacement digits & record result
   for (int k = 0; k < 10; ++k) {
-    base[i] = '0' + k;
-    base[j] = '0' + k;
-    retval.push_back(std::stoi(base));
+    const char replacement = '0' + k;
+    base_str[i] = base_str[j] = replacement;
+    retval.push_back(std::stoi(base_str));
   }
 
   return retval;
@@ -107,22 +69,21 @@ unsigned int pow10(unsigned int n) {
 }
 
 int smallest8PrimeFamilyPrime() {
-  const unsigned int MAX_DIGITS = 8;
+  const unsigned int MIN_DIGITS = 5;
+  const unsigned int MAX_DIGITS = 6;
 
-  for (unsigned int i = 3; i < MAX_DIGITS - 1; ++i)
-    for (unsigned int j = i + 1; j < MAX_DIGITS; ++j) {
-      for (unsigned int additional_digits = 0;
-           additional_digits < MAX_DIGITS - j; ++additional_digits) {
-        const unsigned int FILLER_LIMIT = pow10(j - 1 + additional_digits);
-        for (unsigned int filler_num = pow10(j - 2 + additional_digits);
-             filler_num < FILLER_LIMIT; ++filler_num) {
-          auto possible_primes =
-              generatePossiblePrimes(i, j, filler_num, additional_digits);
+  for (unsigned int n = MIN_DIGITS; n <= MAX_DIGITS; ++n) {
+    const unsigned int Nth_DIGIT_LIMIT = pow10(n) - 1;
+    for (unsigned int base_num = pow10(n - 1) + 1; base_num <= Nth_DIGIT_LIMIT;
+         base_num += 2) {
+      for (unsigned int i = 0; i < n - 1; ++i)
+        for (unsigned int j = i + 1; j < n; ++j) {
+          auto possible_primes = generatePossiblePrimes(i, j, base_num);
           if (hasMinimumPrimes(possible_primes))
             return possible_primes.front();
         }
-      }
     }
+  }
 
   return -1;
 }
@@ -156,4 +117,10 @@ int smallest8PrimeFamilyPrime() {
  * 6. Increasing the maximum digits for computing possible primes is taking too
  * much time to execute. The code needs to be restructured and optimized to
  * improve execution time.
+ * 7. Since 56003 is the smallest 7-prime-value-family prime number, it seems
+ * like we can assume that we can ignore numbers with less than 5 digits. Thus,
+ * when we generate an n-digit number we can begin with the smallest n-digit
+ * number, i.e. 10^(n-1).
+ * 8. We can exclude even numbers in our number generation to reduce the our
+ * computations by roughly a half.
  * */
