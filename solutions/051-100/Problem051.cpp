@@ -32,14 +32,24 @@ int main() {
 
 bool hasMinimumPrimes(const std::vector<unsigned int> &possiblePrimes) {
   const unsigned int MINIMUM_PRIMES = 7;
+
+  // The first number in the list may have a different number of digits than the
+  // rest. So we check this first and decide whether or not to exclude this
+  // value in our check for minimum primes.
+  unsigned int i = 0;
+  if (std::to_string(possiblePrimes[0]).length() !=
+      std::to_string(possiblePrimes[1]).length()) {
+    ++i;
+  }
+
+  const unsigned int MAXIMUM_COMPOSITES = 10 - i - MINIMUM_PRIMES;
   unsigned int num_of_composite = 0;
-  for (unsigned int i = 0;
-       i < possiblePrimes.size() && num_of_composite <= 10 - MINIMUM_PRIMES;
+  for (; i < possiblePrimes.size() && num_of_composite <= MAXIMUM_COMPOSITES;
        ++i) {
     if (!projEuler::isPrime(possiblePrimes[i]))
       ++num_of_composite;
   }
-  return num_of_composite <= 10 - MINIMUM_PRIMES;
+  return num_of_composite <= MAXIMUM_COMPOSITES;
 }
 
 std::vector<unsigned int>
@@ -140,4 +150,7 @@ int smallest8PrimeFamilyPrime() {
  * consider the number 7, or 0007, to be in the same family as 1107 or 2207.
  * Numbers in the same family must have the same number of digits, not counting
  * any leading zeros.
+ * 5. We are now able to calculate 56003 as the lowest prime in the 7 primes
+ * family. The value for 8 primes family cannot be found yet, so we may need to
+ * increase the max number of digits allowed.
  * */
