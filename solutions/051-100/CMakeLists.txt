@@ -1,4 +1,5 @@
 add_executable(Problem051 Problem051.cpp)
+target_include_directories(Problem051 PRIVATE ${CMAKE_HOME_DIRECTORY}/utils)
 add_executable(Problem052 Problem052.cpp)
 add_executable(Problem053 Problem053.cpp)
 add_executable(Problem054 Problem054.cpp)
