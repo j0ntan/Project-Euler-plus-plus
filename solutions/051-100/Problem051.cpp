@@ -24,14 +24,14 @@ int smallest8PrimeFamilyPrime();
 int main() {
   auto ans = smallest8PrimeFamilyPrime();
   if (ans == -1)
-    std::cout << "Could not find the smallest prime below 65003 with an eight "
-                 "prime value family.\n";
+    std::cout << "Could not find the smallest prime with an eight prime value "
+                 "family.\n";
   else
     std::cout << "Smallest prime: " << ans << std::endl;
 }
 
 bool hasMinimumPrimes(const std::vector<unsigned int> &possiblePrimes) {
-  const unsigned int MINIMUM_PRIMES = 7;
+  const unsigned int MINIMUM_PRIMES = 8;
 
   // The first number in the list may have a different number of digits than the
   // rest. So we check this first and decide whether or not to exclude this
@@ -107,15 +107,15 @@ unsigned int pow10(unsigned int n) {
 }
 
 int smallest8PrimeFamilyPrime() {
-  const unsigned int MAX_DIGITS = 5;
+  const unsigned int MAX_DIGITS = 8;
 
-  for (unsigned int i = 0; i < MAX_DIGITS - 1; ++i)
+  for (unsigned int i = 3; i < MAX_DIGITS - 1; ++i)
     for (unsigned int j = i + 1; j < MAX_DIGITS; ++j) {
       for (unsigned int additional_digits = 0;
            additional_digits < MAX_DIGITS - j; ++additional_digits) {
         const unsigned int FILLER_LIMIT = pow10(j - 1 + additional_digits);
-        for (unsigned int filler_num = 0; filler_num < FILLER_LIMIT;
-             ++filler_num) {
+        for (unsigned int filler_num = pow10(j - 2 + additional_digits);
+             filler_num < FILLER_LIMIT; ++filler_num) {
           auto possible_primes =
               generatePossiblePrimes(i, j, filler_num, additional_digits);
           if (hasMinimumPrimes(possible_primes))
@@ -153,4 +153,7 @@ int smallest8PrimeFamilyPrime() {
  * 5. We are now able to calculate 56003 as the lowest prime in the 7 primes
  * family. The value for 8 primes family cannot be found yet, so we may need to
  * increase the max number of digits allowed.
+ * 6. Increasing the maximum digits for computing possible primes is taking too
+ * much time to execute. The code needs to be restructured and optimized to
+ * improve execution time.
  * */
