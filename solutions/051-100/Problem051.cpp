@@ -46,26 +46,33 @@ bool hasMinimumPrimes(const std::vector<unsigned int> &possiblePrimes) {
   return num_of_composite <= MAXIMUM_COMPOSITES;
 }
 
-std::vector<unsigned int> generatePossiblePrimes(unsigned int i, unsigned int j,
-                                                 unsigned int base) {
-  std::vector<unsigned int> retval;
-  retval.reserve(10);
-  std::string base_str = std::to_string(base);
-
-  for (int k = 0; k < 10; ++k) {
-    const char replacement = '0' + k;
-    base_str[i] = base_str[j] = replacement;
-    retval.push_back(std::stoi(base_str));
-  }
-
-  return retval;
-}
-
 unsigned int pow10(unsigned int n) {
   if (n == 0)
     return 1;
   else
     return 10 * pow10(--n);
+}
+
+std::vector<unsigned int> generatePossiblePrimes(unsigned int i, unsigned int j,
+                                                 unsigned int base) {
+  std::vector<unsigned int> retval;
+  retval.reserve(10);
+
+  auto base_digits = projEuler::getDigits(base);
+  unsigned int summer =
+      pow10(base_digits.size() - j - 1) + pow10(base_digits.size() - i - 1);
+
+  base_digits[i] = base_digits[j] = 0;
+  base = projEuler::combineDigits(base_digits);
+
+  if (i != 0)
+    retval.push_back(base);
+  for (int k = 1; k < 10; ++k) {
+    base += summer;
+    retval.push_back(base);
+  }
+
+  return retval;
 }
 
 int smallest8PrimeFamilyPrime() {
@@ -76,8 +83,8 @@ int smallest8PrimeFamilyPrime() {
     const unsigned int Nth_DIGIT_LIMIT = pow10(n) - 1;
     for (unsigned int base_num = pow10(n - 1) + 1; base_num <= Nth_DIGIT_LIMIT;
          base_num += 2) {
-      for (unsigned int i = 0; i < n - 1; ++i)
-        for (unsigned int j = i + 1; j < n; ++j) {
+      for (unsigned int i = 0; i < n - 2; ++i)
+        for (unsigned int j = i + 1; j < n - 1; ++j) {
           auto possible_primes = generatePossiblePrimes(i, j, base_num);
           if (hasMinimumPrimes(possible_primes))
             return possible_primes.front();
@@ -123,4 +130,7 @@ int smallest8PrimeFamilyPrime() {
  * number, i.e. 10^(n-1).
  * 8. We can exclude even numbers in our number generation to reduce the our
  * computations by roughly a half.
+ * 9. Given an n-digit number, it does not make sense to replace the last digit
+ * because it will result in creating several even numbers, which will not meet
+ * the requirement of 8 primes.
  * */
